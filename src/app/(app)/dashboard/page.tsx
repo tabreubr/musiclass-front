@@ -3,26 +3,59 @@
 import { NextClassCard } from "@/components/dashboard/NextClassCard";
 import { QuickStats } from "@/components/dashboard/QuickStats";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { ClassItem } from "@/types";
+import { classesService } from "@/services/classesService";
+import { studentsService } from "@/services/studentsService";
+import { useFetch } from "@/hooks/useFetch";
 
-// Mock data — será substituído pela API do Spring Boot na Fase 2
-const mockNextClass: ClassItem = {
-  id: 1,
-  date: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-  passed: null,
-  observations: "",
-  student: { id: 1, name: "Sarah Johnson", instrument: "Guitar", level: "Intermediate" },
-  lesson: { id: 1, name: "Suzuki Book 2 - Lesson 5" },
-  instructor: { id: 1, name: "Michael Anderson", email: "michael@musiclass.com" },
-};
+function daysUntil(dateStr: string): number {
+  const target = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.floor((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
 
-const mockActivity = [
-  { id: 1, studentName: "Emma Wilson", instrument: "Piano", action: "Piano lesson completed", status: "passed" as const, timeAgo: "2h ago" },
-  { id: 2, studentName: "James Chen", instrument: "Vocals", action: "Vocal lesson scheduled", status: "pending" as const, timeAgo: "5h ago" },
-  { id: 3, studentName: "Olivia Brown", instrument: "Violin", action: "Violin lesson completed", status: "failed" as const, timeAgo: "1d ago" },
-];
+function timeAgoLabel(dateStr: string): string {
+  const diff = Math.round((Date.now() - new Date(dateStr).getTime()) / 60000);
+  if (diff < 60) return `${diff}min ago`;
+  if (diff < 60 * 24) return `${Math.round(diff / 60)}h ago`;
+  return `${Math.round(diff / (60 * 24))}d ago`;
+}
 
 export default function DashboardPage() {
+  const { data: classes } = useFetch(() => classesService.findAll());
+  const { data: students } = useFetch(() => studentsService.findAll());
+
+  const now = new Date();
+
+  // Próxima aula: primeira aula futura
+  const upcoming = (classes ?? [])
+    .filter((c) => new Date(c.date) > now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const nextClass = upcoming[0] ?? null;
+
+  // Aulas no mês atual
+  const classesThisMonth = (classes ?? []).filter((c) => {
+    const d = new Date(c.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
+  // Atividade recente: últimas 5 aulas passadas
+  const recentActivity = (classes ?? [])
+    .filter((c) => new Date(c.date) <= now)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5)
+    .map((c) => {
+      const instrumentName = c.student?.instrument?.name ?? c.lessons?.[0]?.methodName?.name ?? "Music";
+      return {
+        id: c.id,
+        studentName: c.student?.name ?? "—",
+        instrument: instrumentName,
+        action: `${instrumentName} lesson ${c.passed === true ? "passed" : c.passed === false ? "failed" : "completed"}`,
+        status: (c.passed === true ? "passed" : c.passed === false ? "failed" : "pending") as "passed" | "failed" | "pending",
+        timeAgo: timeAgoLabel(c.date),
+      };
+    });
+
   return (
     <div className="flex flex-col">
 
@@ -48,19 +81,26 @@ export default function DashboardPage() {
                 fill="white"
               />
             </svg>
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-status-failed rounded-full text-white text-xs flex items-center justify-center font-bold">
-              3
-            </span>
           </button>
         </div>
 
-        <NextClassCard classItem={mockNextClass} minutesUntil={30} />
+        {nextClass ? (
+          <NextClassCard classItem={nextClass} daysUntil={daysUntil(nextClass.date)} />
+        ) : (
+          <div className="bg-white/10 rounded-2xl px-4 py-4">
+            <p className="text-white/80 text-sm text-center">No upcoming classes</p>
+          </div>
+        )}
       </div>
 
       {/* Conteúdo */}
       <div className="flex flex-col gap-6 p-5">
-        <QuickStats students={24} classesThisMonth={38} goalsDone={12} />
-        <RecentActivity items={mockActivity} />
+        <QuickStats
+          students={students?.length ?? 0}
+          classesThisMonth={classesThisMonth}
+          goalsDone={0}
+        />
+        <RecentActivity items={recentActivity} />
       </div>
     </div>
   );

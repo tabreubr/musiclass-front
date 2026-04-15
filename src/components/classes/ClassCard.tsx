@@ -20,11 +20,14 @@ function formatDate(dateStr: string): string {
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
 
   const time = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
   if (date.toDateString() === today.toDateString()) return `Today, ${time}`;
   if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${time}`;
+  if (date.toDateString() === tomorrow.toDateString()) return `Tomorrow, ${time}`;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + `, ${time}`;
 }
 
@@ -34,24 +37,27 @@ interface ClassCardProps {
 }
 
 export function ClassCard({ classItem, onClick }: ClassCardProps) {
-  const instrument = classItem.student.instrument ?? "default";
-  const { emoji, bg } = instrumentIcons[instrument] ?? instrumentIcons.default;
+  const instrumentName = classItem.student?.instrument?.name ?? "default";
+  const { emoji, bg } = instrumentIcons[instrumentName] ?? instrumentIcons.default;
   const status = getStatus(classItem.passed);
+  const lessonCount = classItem.lessons?.length ?? 0;
+  const doneCount = classItem.lessons?.filter((l) => l.completed).length ?? 0;
+  const lessonSummary = lessonCount > 0 ? `${doneCount}/${lessonCount} lessons` : "No lessons";
 
   return (
     <div
       onClick={onClick}
       className="bg-white rounded-2xl px-4 py-3 shadow-card flex items-center gap-3 cursor-pointer active:scale-98 transition-transform"
     >
-      {/* Ícone do instrumento */}
+      {/* Ícone */}
       <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center text-2xl flex-shrink-0`}>
         {emoji}
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-text-primary text-sm">{classItem.student.name}</p>
-        <p className="text-text-secondary text-xs">{instrument}</p>
+        <p className="font-semibold text-text-primary text-sm">{classItem.student?.name ?? "—"}</p>
+        <p className="text-text-secondary text-xs">{instrumentName !== "default" ? instrumentName : "—"} · {lessonSummary}</p>
         <p className="text-text-secondary text-xs mt-0.5">{formatDate(classItem.date)}</p>
       </div>
 

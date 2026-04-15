@@ -18,7 +18,8 @@ interface StudentCardProps {
 }
 
 export function StudentCard({ student, progress, nextClass, onClick }: StudentCardProps) {
-  const { emoji, bg } = instrumentIcons[student.instrument] ?? instrumentIcons.default;
+  const instrumentName = student.instrument?.name ?? "default";
+  const { emoji, bg } = instrumentIcons[instrumentName] ?? instrumentIcons.default;
 
   return (
     <div
@@ -33,7 +34,9 @@ export function StudentCard({ student, progress, nextClass, onClick }: StudentCa
       {/* Info */}
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-text-primary text-sm">{student.name}</p>
-        <p className="text-text-secondary text-xs mb-2">{student.instrument}</p>
+        <p className="text-text-secondary text-xs mb-2">
+          {instrumentName !== "default" ? instrumentName : "Music Student"}
+        </p>
 
         <div className="flex items-center gap-1 mb-1">
           <span className="text-xs text-text-secondary">Progress</span>

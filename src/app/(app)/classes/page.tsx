@@ -6,6 +6,8 @@ import { ClassCard } from "@/components/classes/ClassCard";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { FilterChips } from "@/components/ui/FilterChips";
 import { ClassItem } from "@/types";
+import { classesService } from "@/services/classesService";
+import { useFetch } from "@/hooks/useFetch";
 
 type Filter = "all" | "today" | "upcoming" | "past";
 
@@ -14,55 +16,6 @@ const filterOptions: { label: string; value: Filter }[] = [
   { label: "Today", value: "today" },
   { label: "Upcoming", value: "upcoming" },
   { label: "Past", value: "past" },
-];
-
-// Mock data — será substituído pela API do Spring Boot na Fase 2
-const mockClasses: ClassItem[] = [
-  {
-    id: 1,
-    date: new Date().toISOString(),
-    passed: null,
-    observations: "",
-    student: { id: 1, name: "Sarah Johnson", instrument: "Guitar", level: "Intermediate" },
-    lesson: { id: 1, name: "Suzuki Book 2 - Lesson 5" },
-    instructor: { id: 1, name: "Michael Anderson", email: "" },
-  },
-  {
-    id: 2,
-    date: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    passed: null,
-    observations: "",
-    student: { id: 2, name: "Emma Wilson", instrument: "Piano", level: "Beginner" },
-    lesson: { id: 2, name: "Scales Practice" },
-    instructor: { id: 1, name: "Michael Anderson", email: "" },
-  },
-  {
-    id: 3,
-    date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    passed: true,
-    observations: "Great progress!",
-    student: { id: 3, name: "James Chen", instrument: "Vocals", level: "Intermediate" },
-    lesson: { id: 3, name: "Breathing Techniques" },
-    instructor: { id: 1, name: "Michael Anderson", email: "" },
-  },
-  {
-    id: 4,
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    passed: true,
-    observations: "",
-    student: { id: 4, name: "Alex Martinez", instrument: "Drums", level: "Advanced" },
-    lesson: { id: 4, name: "Rudiments" },
-    instructor: { id: 1, name: "Michael Anderson", email: "" },
-  },
-  {
-    id: 5,
-    date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    passed: false,
-    observations: "Needs more practice",
-    student: { id: 5, name: "Olivia Brown", instrument: "Violin", level: "Beginner" },
-    lesson: { id: 5, name: "Bow Technique" },
-    instructor: { id: 1, name: "Michael Anderson", email: "" },
-  },
 ];
 
 function applyFilter(classes: ClassItem[], filter: Filter): ClassItem[] {
@@ -90,7 +43,9 @@ export default function ClassesPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
 
-  const filtered = applyFilter(mockClasses, filter).filter((c) =>
+  const { data: classes, loading, error } = useFetch(() => classesService.findAll());
+
+  const filtered = applyFilter(classes ?? [], filter).filter((c) =>
     c.student.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -116,20 +71,32 @@ export default function ClassesPage() {
 
       {/* Lista */}
       <div className="flex-1 px-5 py-4 flex flex-col gap-3">
-        {filtered.length === 0 ? (
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
+            <span className="text-4xl mb-3 animate-spin">⏳</span>
+            <p className="font-medium">Loading classes...</p>
+          </div>
+        )}
+        {error && (
+          <div className="flex flex-col items-center justify-center py-16 text-red-500">
+            <span className="text-4xl mb-3">⚠️</span>
+            <p className="font-medium">Failed to load classes</p>
+            <p className="text-sm text-text-secondary mt-1">{error}</p>
+          </div>
+        )}
+        {!loading && !error && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
             <span className="text-4xl mb-3">🎵</span>
             <p className="font-medium">No classes found</p>
           </div>
-        ) : (
-          filtered.map((classItem) => (
-            <ClassCard
-              key={classItem.id}
-              classItem={classItem}
-              onClick={() => router.push(`/classes/${classItem.id}`)}
-            />
-          ))
         )}
+        {!loading && !error && filtered.map((classItem) => (
+          <ClassCard
+            key={classItem.id}
+            classItem={classItem}
+            onClick={() => router.push(`/classes/${classItem.id}`)}
+          />
+        ))}
       </div>
 
       {/* FAB */}

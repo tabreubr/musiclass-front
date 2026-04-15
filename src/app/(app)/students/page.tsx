@@ -4,28 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { StudentCard } from "@/components/students/StudentCard";
 import { SearchBar } from "@/components/ui/SearchBar";
-import { Student } from "@/types";
-
-// Mock data — será substituído pela API do Spring Boot na Fase 2
-interface StudentWithMeta extends Student {
-  progress: number;
-  nextClass?: string;
-}
-
-const mockStudents: StudentWithMeta[] = [
-  { id: 1, name: "Sarah Johnson",  instrument: "Guitar", level: "Intermediate", progress: 75, nextClass: "Today, 2:30 PM" },
-  { id: 2, name: "Emma Wilson",    instrument: "Piano",  level: "Beginner",     progress: 90, nextClass: "Today, 4:00 PM" },
-  { id: 3, name: "James Chen",     instrument: "Vocals", level: "Intermediate", progress: 60, nextClass: "Tomorrow, 3:00 PM" },
-  { id: 4, name: "Alex Martinez",  instrument: "Drums",  level: "Advanced",     progress: 85, nextClass: "Apr 16, 5:00 PM" },
-  { id: 5, name: "Olivia Brown",   instrument: "Violin", level: "Beginner",     progress: 40, nextClass: "Apr 17, 1:00 PM" },
-  { id: 6, name: "Lucas Pereira",  instrument: "Guitar", level: "Beginner",     progress: 30, nextClass: "Apr 18, 10:00 AM" },
-];
+import { studentsService } from "@/services/studentsService";
+import { useFetch } from "@/hooks/useFetch";
 
 export default function StudentsPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
 
-  const filtered = mockStudents.filter((s) =>
+  const { data: students, loading, error } = useFetch(() => studentsService.findAll());
+
+  const filtered = (students ?? []).filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
     s.instrument.toLowerCase().includes(search.toLowerCase())
   );
@@ -52,26 +40,39 @@ export default function StudentsPage() {
 
       {/* Contador + Lista */}
       <div className="flex-1 px-5 py-4 flex flex-col gap-3">
-        <p className="text-sm text-text-secondary font-medium">
-          {filtered.length} active student{filtered.length !== 1 ? "s" : ""}
-        </p>
+        {!loading && !error && (
+          <p className="text-sm text-text-secondary font-medium">
+            {filtered.length} active student{filtered.length !== 1 ? "s" : ""}
+          </p>
+        )}
 
-        {filtered.length === 0 ? (
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
+            <span className="text-4xl mb-3 animate-spin">⏳</span>
+            <p className="font-medium">Loading students...</p>
+          </div>
+        )}
+        {error && (
+          <div className="flex flex-col items-center justify-center py-16 text-red-500">
+            <span className="text-4xl mb-3">⚠️</span>
+            <p className="font-medium">Failed to load students</p>
+            <p className="text-sm text-text-secondary mt-1">{error}</p>
+          </div>
+        )}
+        {!loading && !error && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
             <span className="text-4xl mb-3">🎓</span>
             <p className="font-medium">No students found</p>
           </div>
-        ) : (
-          filtered.map((student) => (
-            <StudentCard
-              key={student.id}
-              student={student}
-              progress={student.progress}
-              nextClass={student.nextClass}
-              onClick={() => router.push(`/students/${student.id}`)}
-            />
-          ))
         )}
+        {!loading && !error && filtered.map((student) => (
+          <StudentCard
+            key={student.id}
+            student={student}
+            progress={0}
+            onClick={() => router.push(`/students/${student.id}`)}
+          />
+        ))}
       </div>
 
       {/* FAB */}

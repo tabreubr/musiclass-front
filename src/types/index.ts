@@ -1,27 +1,33 @@
+export interface Instrument {
+  id: number;
+  name: string;
+}
+
 export interface Student {
   id: number;
   name: string;
-  instrument: string;
-  level: string;
-  progress?: number;
-  nextClass?: string;
+  instrument?: Instrument;
+  instructor?: Instructor;
+  classes?: ClassItem[];
 }
 
 export interface Instructor {
   id: number;
   name: string;
-  email: string;
-}
-
-export interface Lesson {
-  id: number;
-  name: string;
-  description?: string;
+  email?: string;
 }
 
 export interface Method {
   id: number;
   name: string;
+}
+
+export interface Lesson {
+  id: number;
+  methodName: Method;
+  page?: number;
+  lessonNumber?: number;
+  completed: boolean;
 }
 
 export interface ClassItem {
@@ -30,7 +36,7 @@ export interface ClassItem {
   observations?: string;
   passed: boolean | null;
   student: Student;
-  lesson: Lesson;
+  lessons: Lesson[];
   instructor: Instructor;
 }
 
