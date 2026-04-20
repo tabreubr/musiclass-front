@@ -14,7 +14,7 @@ export function OverallProgressCard({
   inProgress,
 }: OverallProgressCardProps) {
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-card">
+    <div className="bg-white rounded-2xl p-4 border border-border">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
           🎯

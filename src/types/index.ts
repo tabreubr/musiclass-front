@@ -42,16 +42,17 @@ export interface ClassItem {
 
 export interface DevelopmentGoal {
   id: number;
-  name: string;
-  description?: string;
-  progress: number;
+  description: string;
+  deadline?: string;
+  student: Student;
 }
 
 export interface ProgressGoal {
   id: number;
-  name: string;
-  progress: number;
+  deadline?: string;
+  targetLessonNumber: number;
   student: Student;
+  method: Method;
 }
 
 export type ClassStatus = "passed" | "pending" | "failed";

@@ -11,7 +11,7 @@ export function Card({ children, className = "", onClick }: CardProps) {
     <div
       onClick={onClick}
       className={`
-        bg-white rounded-2xl p-4 shadow-card
+        bg-white rounded-2xl p-4 border border-border
         ${onClick ? "cursor-pointer active:scale-98 transition-transform duration-150" : ""}
         ${className}
       `}

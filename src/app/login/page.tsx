@@ -1,28 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // TODO: integrar com Spring Boot - POST /auth/login
-    // const response = await api.post("/auth/login", { email, password });
-    // guardar token JWT no localStorage/cookie
-
-    // Por agora navega direto pro dashboard (mock)
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 800);
+    try {
+      await login({ email, password });
+      // login() já redireciona para /dashboard em caso de sucesso
+    } catch {
+      setError("Email ou senha incorretos. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -73,27 +75,26 @@ export default function LoginPage() {
           autoComplete="current-password"
         />
 
+        {/* Mensagem de erro */}
+        {error && (
+          <p className="text-red-300 text-sm text-center -mt-1">{error}</p>
+        )}
+
         <Button
           type="submit"
           fullWidth
           disabled={loading}
           className="mt-2 bg-primary-dark hover:bg-primary"
         >
-          {loading ? "Entering..." : "Enter"}
+          {loading ? "Entrando..." : "Entrar"}
         </Button>
       </form>
 
       {/* Links */}
       <div className="flex flex-col items-center gap-3 mt-6">
         <button className="text-primary-light text-sm hover:text-white transition-colors">
-          Forgot password?
+          Esqueceu a senha?
         </button>
-        <p className="text-primary-light text-sm">
-          Don&apos;t have an account?{" "}
-          <span className="text-white font-semibold cursor-pointer hover:underline">
-            Sign up
-          </span>
-        </p>
       </div>
 
       {/* Decoração musical */}

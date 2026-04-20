@@ -1,3 +1,5 @@
+"use client";
+
 interface NotificationCardProps {
   icon: string;
   iconBg: string;
@@ -10,7 +12,6 @@ interface NotificationCardProps {
 
 export function NotificationCard({
   icon,
-  iconBg,
   title,
   description,
   timeAgo,
@@ -20,25 +21,20 @@ export function NotificationCard({
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl p-4 shadow-card flex items-start gap-3 cursor-pointer active:scale-98 transition-transform"
+      className="bg-white rounded-xl border border-border p-4 flex items-start gap-3 cursor-pointer active:bg-slate-50 transition-colors"
     >
-      {/* Ícone */}
-      <div className={`w-11 h-11 ${iconBg} rounded-xl flex items-center justify-center text-xl flex-shrink-0`}>
+      <div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center text-lg flex-shrink-0">
         {icon}
       </div>
-
-      {/* Conteúdo */}
       <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start">
-          <p className={`text-sm font-semibold text-text-primary ${unread ? "font-bold" : ""}`}>
+        <div className="flex justify-between items-start gap-2">
+          <p className={`text-sm text-text-primary leading-tight ${unread ? "font-semibold" : "font-medium"}`}>
             {title}
           </p>
-          {unread && (
-            <span className="w-2.5 h-2.5 bg-primary rounded-full flex-shrink-0 mt-1" />
-          )}
+          {unread && <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1" />}
         </div>
-        <p className="text-text-secondary text-xs mt-0.5 leading-relaxed">{description}</p>
-        <p className="text-text-secondary text-xs mt-1.5">{timeAgo}</p>
+        <p className="text-xs text-text-secondary mt-1 leading-relaxed">{description}</p>
+        <p className="text-xs text-text-secondary mt-1">{timeAgo}</p>
       </div>
     </div>
   );

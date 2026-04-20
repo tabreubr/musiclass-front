@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { classesService } from "@/services/classesService";
 import { lessonsService } from "@/services/lessonsService";
 import { ClassItem, Lesson } from "@/types";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Result = "passed" | "failed" | null;
 
@@ -29,6 +30,7 @@ function lessonLabel(lesson: Lesson): string {
 export default function ClassDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { t } = useLanguage();
   const id = Number(params.id);
 
   const [classItem, setClassItem] = useState<ClassItem | null>(null);
@@ -40,10 +42,8 @@ export default function ClassDetailPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // estado local das lições para atualizar os ticks sem refetch
   const [lessons, setLessons] = useState<Lesson[]>([]);
 
-  // formulário de nova lição
   const [showAddLesson, setShowAddLesson] = useState(false);
   const [newMethodName, setNewMethodName] = useState("");
   const [newPage, setNewPage] = useState("");
@@ -64,14 +64,12 @@ export default function ClassDetailPage() {
 
   async function handleToggle(lesson: Lesson) {
     const updated = !lesson.completed;
-    // atualiza localmente primeiro (UI responsiva)
     setLessons((prev) =>
       prev.map((l) => l.id === lesson.id ? { ...l, completed: updated } : l)
     );
     try {
       await lessonsService.toggleCompleted(id, lesson.id, updated);
     } catch {
-      // reverte se falhar
       setLessons((prev) =>
         prev.map((l) => l.id === lesson.id ? { ...l, completed: !updated } : l)
       );
@@ -83,7 +81,7 @@ export default function ClassDetailPage() {
     try {
       await lessonsService.deleteFromClass(id, lessonId);
     } catch {
-      // silently ignore — refetch se necessário
+      // silently ignore
     }
   }
 
@@ -102,7 +100,7 @@ export default function ClassDetailPage() {
       setNewLessonNumber("");
       setShowAddLesson(false);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error adding lesson");
+      alert(err instanceof Error ? err.message : t("classes_err_add_lesson"));
     } finally {
       setAddingLesson(false);
     }
@@ -120,7 +118,7 @@ export default function ClassDetailPage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error saving");
+      alert(err instanceof Error ? err.message : t("classes_err_save"));
     } finally {
       setSaving(false);
     }
@@ -130,7 +128,7 @@ export default function ClassDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-text-secondary gap-3">
         <span className="text-4xl animate-spin">⏳</span>
-        <p className="font-medium">Loading class...</p>
+        <p className="font-medium">{t("classes_loading_detail")}</p>
       </div>
     );
   }
@@ -139,8 +137,8 @@ export default function ClassDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-red-500 gap-3">
         <span className="text-4xl">⚠️</span>
-        <p className="font-medium">{error ?? "Class not found"}</p>
-        <button onClick={() => router.back()} className="text-primary text-sm mt-2">← Go back</button>
+        <p className="font-medium">{error ?? t("classes_not_found")}</p>
+        <button onClick={() => router.back()} className="text-primary text-sm mt-2">{t("classes_go_back")}</button>
       </div>
     );
   }
@@ -152,48 +150,36 @@ export default function ClassDetailPage() {
     <div className="flex flex-col min-h-screen">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary to-primary-dark px-5 pt-12 pb-8">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1 text-white/80 text-sm mb-5 hover:text-white transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <div className="bg-white px-6 pt-14 pb-4 border-b border-border" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+        <button onClick={() => router.back()} className="flex items-center gap-1 text-text-secondary text-sm mb-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Classes
+          {t("nav_classes")}
         </button>
-
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">
-            🎵
-          </div>
-          <div>
-            <h1 className="text-white font-bold text-xl">{classItem.student?.name ?? "—"}</h1>
-            <p className="text-white/70 text-sm">{instrumentName}</p>
-            <p className="text-white/60 text-xs mt-0.5">{formatDateTime(classItem.date)}</p>
-          </div>
-        </div>
+        <h1 className="text-lg font-bold text-text-primary">{classItem.student?.name ?? "—"}</h1>
+        <p className="text-sm text-text-secondary mt-0.5">{instrumentName} · {formatDateTime(classItem.date)}</p>
       </div>
 
       {/* Conteúdo */}
-      <div className="flex-1 px-5 py-5 flex flex-col gap-4">
+      <div className="flex-1 px-6 py-5 flex flex-col gap-4" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
 
-        {/* Info */}
-        <div className="bg-white rounded-2xl p-4 shadow-card">
+        {/* Instrutor */}
+        <div className="bg-white rounded-2xl p-4 border border-border">
           <div className="flex justify-between items-center">
-            <span className="text-text-secondary text-sm">Instructor</span>
+            <span className="text-text-secondary text-sm">{t("classes_instructor")}</span>
             <span className="text-text-primary text-sm font-medium">{classItem.instructor?.name ?? "—"}</span>
           </div>
         </div>
 
         {/* Lições */}
-        <div className="bg-white rounded-2xl p-4 shadow-card">
+        <div className="bg-white rounded-2xl p-4 border border-border">
           <div className="flex justify-between items-center mb-3">
             <div>
-              <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide">Lessons</p>
+              <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide">{t("classes_lessons")}</p>
               {lessons.length > 0 && (
                 <p className="text-text-secondary text-xs mt-0.5">
-                  {doneCount}/{lessons.length} completed
+                  {doneCount}/{lessons.length} {t("classes_completed")}
                 </p>
               )}
             </div>
@@ -211,21 +197,21 @@ export default function ClassDetailPage() {
               <input
                 value={newMethodName}
                 onChange={(e) => setNewMethodName(e.target.value)}
-                placeholder="Method (e.g. Schimoll, Bona)"
+                placeholder={t("classes_method")}
                 className="w-full text-sm bg-white rounded-lg px-3 py-2 outline-none border border-border"
               />
               <div className="flex gap-2">
                 <input
                   value={newLessonNumber}
                   onChange={(e) => setNewLessonNumber(e.target.value)}
-                  placeholder="Lesson #"
+                  placeholder={t("classes_lesson_number")}
                   type="number"
                   className="flex-1 text-sm bg-white rounded-lg px-3 py-2 outline-none border border-border"
                 />
                 <input
                   value={newPage}
                   onChange={(e) => setNewPage(e.target.value)}
-                  placeholder="Page"
+                  placeholder={t("classes_page")}
                   type="number"
                   className="flex-1 text-sm bg-white rounded-lg px-3 py-2 outline-none border border-border"
                 />
@@ -235,14 +221,14 @@ export default function ClassDetailPage() {
                 disabled={addingLesson || !newMethodName.trim()}
                 className="w-full py-2 bg-primary text-white text-sm font-semibold rounded-lg disabled:opacity-50"
               >
-                {addingLesson ? "Adding..." : "Add Lesson"}
+                {addingLesson ? t("classes_adding") : t("classes_add_lesson")}
               </button>
             </div>
           )}
 
           {/* Lista de lições */}
           {lessons.length === 0 ? (
-            <p className="text-text-secondary text-sm text-center py-4">No lessons yet. Tap + to add.</p>
+            <p className="text-text-secondary text-sm text-center py-4">{t("classes_no_lessons_hint")}</p>
           ) : (
             <div className="flex flex-col gap-2">
               {lessons.map((lesson) => (
@@ -277,13 +263,13 @@ export default function ClassDetailPage() {
         </div>
 
         {/* Resultado */}
-        <div className="bg-white rounded-2xl p-4 shadow-card">
-          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">Result</p>
+        <div className="bg-white rounded-2xl p-4 border border-border">
+          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">{t("classes_result")}</p>
           <div className="flex gap-2">
             {(["passed", "pending", "failed"] as const).map((r) => (
               <ResultButton
                 key={r}
-                label={r.charAt(0).toUpperCase() + r.slice(1)}
+                label={t(r === "passed" ? "classes_passed" : r === "failed" ? "classes_failed" : "classes_pending")}
                 color={r === "passed" ? "green" : r === "failed" ? "red" : "amber"}
                 active={result === (r === "pending" ? null : r)}
                 onClick={() => setResult(r === "pending" ? null : result === r ? null : r)}
@@ -293,12 +279,14 @@ export default function ClassDetailPage() {
         </div>
 
         {/* Observações */}
-        <div className="bg-white rounded-2xl p-4 shadow-card">
-          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">Observations</p>
+        <div className="bg-white rounded-2xl p-4 border border-border">
+          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">
+            {t("classes_observations").replace("...", "")}
+          </p>
           <textarea
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
-            placeholder="Add notes about this class..."
+            placeholder={t("classes_obs_detail_placeholder")}
             rows={4}
             className="w-full text-sm text-text-primary placeholder-text-secondary resize-none outline-none"
           />
@@ -309,8 +297,9 @@ export default function ClassDetailPage() {
           onClick={handleSave}
           disabled={saving}
           className="w-full py-4 bg-primary text-white font-semibold rounded-2xl active:scale-95 transition-transform disabled:opacity-60"
+          style={{ marginBottom: '8px' }}
         >
-          {saving ? "Saving..." : saved ? "✓ Saved!" : "Save Changes"}
+          {saving ? t("classes_saving") : saved ? t("classes_saved") : t("classes_save_changes")}
         </button>
       </div>
     </div>

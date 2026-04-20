@@ -6,9 +6,11 @@ import { classesService } from "@/services/classesService";
 import { studentsService } from "@/services/studentsService";
 import { instructorsService } from "@/services/instructorsService";
 import { useFetch } from "@/hooks/useFetch";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function NewClassPage() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const { data: students } = useFetch(() => studentsService.findAll());
   const { data: instructors } = useFetch(() => instructorsService.findAll());
@@ -22,10 +24,10 @@ export default function NewClassPage() {
 
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
-    if (!studentId) newErrors.student = "Select a student";
-    if (!instructorId) newErrors.instructor = "Select an instructor";
-    if (!date) newErrors.date = "Select a date and time";
-    else if (new Date(date) <= new Date()) newErrors.date = "Date must be in the future";
+    if (!studentId) newErrors.student = t("classes_err_student");
+    if (!instructorId) newErrors.instructor = t("classes_err_instructor");
+    if (!date) newErrors.date = t("classes_err_date");
+    else if (new Date(date) <= new Date()) newErrors.date = t("classes_err_date_future");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -37,8 +39,8 @@ export default function NewClassPage() {
       const created = await classesService.save({
         date,
         observations,
-        student: { id: Number(studentId) },
-        instructor: { id: Number(instructorId) },
+        student: { id: Number(studentId) } as never,
+        instructor: { id: Number(instructorId) } as never,
       });
       router.push(`/classes/${created.id}`);
     } catch (err: unknown) {
@@ -52,34 +54,30 @@ export default function NewClassPage() {
     <div className="flex flex-col min-h-screen">
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary to-primary-dark px-5 pt-12 pb-8">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1 text-white/80 text-sm mb-5 hover:text-white transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <div className="bg-white px-6 pt-14 pb-4 border-b border-border" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+        <button onClick={() => router.back()} className="flex items-center gap-1 text-text-secondary text-sm mb-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Classes
+          {t("nav_classes")}
         </button>
-        <h1 className="text-white font-bold text-2xl">New Class</h1>
-        <p className="text-white/70 text-sm mt-1">Schedule a new lesson</p>
+        <h1 className="text-lg font-bold text-text-primary">{t("classes_new_title")}</h1>
       </div>
 
       {/* Formulário */}
-      <div className="flex-1 px-5 py-5 flex flex-col gap-4">
+      <div className="flex-1 px-6 py-5 flex flex-col gap-4" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
 
         {/* Aluno */}
-        <div className="bg-white rounded-2xl p-4 shadow-card">
+        <div className="bg-white rounded-2xl p-4 border border-border">
           <label className="text-text-secondary text-xs font-semibold uppercase tracking-wide block mb-3">
-            Student
+            {t("classes_student")}
           </label>
           <select
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             className="w-full text-sm text-text-primary outline-none bg-transparent"
           >
-            <option value="">Select a student...</option>
+            <option value="">{t("classes_select_student")}</option>
             {(students ?? []).map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name} — {s.instrument?.name ?? ""}
@@ -90,16 +88,16 @@ export default function NewClassPage() {
         </div>
 
         {/* Instrutor */}
-        <div className="bg-white rounded-2xl p-4 shadow-card">
+        <div className="bg-white rounded-2xl p-4 border border-border">
           <label className="text-text-secondary text-xs font-semibold uppercase tracking-wide block mb-3">
-            Instructor
+            {t("classes_instructor")}
           </label>
           <select
             value={instructorId}
             onChange={(e) => setInstructorId(e.target.value)}
             className="w-full text-sm text-text-primary outline-none bg-transparent"
           >
-            <option value="">Select an instructor...</option>
+            <option value="">{t("classes_select_instructor")}</option>
             {(instructors ?? []).map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name}
@@ -110,9 +108,9 @@ export default function NewClassPage() {
         </div>
 
         {/* Data e hora */}
-        <div className="bg-white rounded-2xl p-4 shadow-card">
+        <div className="bg-white rounded-2xl p-4 border border-border">
           <label className="text-text-secondary text-xs font-semibold uppercase tracking-wide block mb-3">
-            Date & Time
+            {t("classes_date")}
           </label>
           <input
             type="datetime-local"
@@ -125,24 +123,24 @@ export default function NewClassPage() {
         </div>
 
         {/* Observações */}
-        <div className="bg-white rounded-2xl p-4 shadow-card">
+        <div className="bg-white rounded-2xl p-4 border border-border">
           <label className="text-text-secondary text-xs font-semibold uppercase tracking-wide block mb-3">
-            Observations <span className="normal-case font-normal">(optional)</span>
+            {t("classes_observations").replace("...", "")} <span className="normal-case font-normal">{t("classes_obs_optional")}</span>
           </label>
           <textarea
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
-            placeholder="Any notes before the class..."
+            placeholder={t("classes_obs_placeholder")}
             rows={3}
             className="w-full text-sm text-text-primary placeholder-text-secondary resize-none outline-none"
           />
         </div>
 
-        {/* Aviso sobre passed */}
+        {/* Aviso */}
         <div className="bg-amber-50 rounded-2xl px-4 py-3 flex items-start gap-3">
           <span className="text-lg">💡</span>
           <p className="text-amber-700 text-xs leading-relaxed">
-            The class result (Passed / Failed) can be registered after the lesson in the class detail screen.
+            {t("classes_result_tip")}
           </p>
         </div>
 
@@ -152,7 +150,7 @@ export default function NewClassPage() {
           disabled={saving}
           className="w-full py-4 bg-primary text-white font-semibold rounded-2xl active:scale-95 transition-transform disabled:opacity-60"
         >
-          {saving ? "Creating..." : "Create Class"}
+          {saving ? t("classes_creating") : t("classes_create")}
         </button>
       </div>
     </div>

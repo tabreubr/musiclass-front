@@ -8,15 +8,9 @@ import { FilterChips } from "@/components/ui/FilterChips";
 import { ClassItem } from "@/types";
 import { classesService } from "@/services/classesService";
 import { useFetch } from "@/hooks/useFetch";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Filter = "all" | "today" | "upcoming" | "past";
-
-const filterOptions: { label: string; value: Filter }[] = [
-  { label: "All", value: "all" },
-  { label: "Today", value: "today" },
-  { label: "Upcoming", value: "upcoming" },
-  { label: "Past", value: "past" },
-];
 
 function applyFilter(classes: ClassItem[], filter: Filter): ClassItem[] {
   const now = new Date();
@@ -40,24 +34,32 @@ function applyFilter(classes: ClassItem[], filter: Filter): ClassItem[] {
 
 export default function ClassesPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
 
   const { data: classes, loading, error } = useFetch(() => classesService.findAll());
+
+  const filterOptions: { label: string; value: Filter }[] = [
+    { label: t("classes_filter_all"), value: "all" },
+    { label: t("classes_filter_today"), value: "today" },
+    { label: t("classes_filter_upcoming"), value: "upcoming" },
+    { label: t("classes_filter_past"), value: "past" },
+  ];
 
   const filtered = applyFilter(classes ?? [], filter).filter((c) =>
     c.student.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="bg-[#F8FAFC]">
 
       {/* Header */}
-      <div className="bg-white px-5 pt-12 pb-4 shadow-sm">
-        <h1 className="text-2xl font-bold text-text-primary mb-4">Classes</h1>
-        <div className="flex flex-col gap-3">
+      <div className="bg-white px-6 pt-14 pb-5 shadow-sm" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+        <h1 className="text-xl font-semibold text-[#1E3A5F] mb-5">{t("classes_title")}</h1>
+        <div className="flex flex-col gap-4">
           <SearchBar
-            placeholder="Search classes..."
+            placeholder={t("classes_search")}
             value={search}
             onChange={setSearch}
           />
@@ -70,24 +72,24 @@ export default function ClassesPage() {
       </div>
 
       {/* Lista */}
-      <div className="flex-1 px-5 py-4 flex flex-col gap-3">
+      <div className="px-6 py-4 flex flex-col gap-3.5" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
             <span className="text-4xl mb-3 animate-spin">⏳</span>
-            <p className="font-medium">Loading classes...</p>
+            <p className="font-medium">{t("classes_loading")}</p>
           </div>
         )}
         {error && (
           <div className="flex flex-col items-center justify-center py-16 text-red-500">
             <span className="text-4xl mb-3">⚠️</span>
-            <p className="font-medium">Failed to load classes</p>
+            <p className="font-medium">{t("classes_error")}</p>
             <p className="text-sm text-text-secondary mt-1">{error}</p>
           </div>
         )}
         {!loading && !error && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
             <span className="text-4xl mb-3">🎵</span>
-            <p className="font-medium">No classes found</p>
+            <p className="font-medium">{t("classes_empty")}</p>
           </div>
         )}
         {!loading && !error && filtered.map((classItem) => (
