@@ -7,6 +7,7 @@ import { inviteService, InviteResponse } from "@/services/inviteService";
 import { Student, ClassItem } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 const instrumentIcons: Record<string, string> = {
   Guitar: "🎸", Piano: "🎹", Vocals: "🎤",
@@ -30,6 +31,7 @@ export default function StudentProfilePage() {
   const [invite, setInvite] = useState<InviteResponse | null>(null);
   const [generatingInvite, setGeneratingInvite] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     studentsService.findById(id)
@@ -66,6 +68,15 @@ export default function StudentProfilePage() {
         <button onClick={() => router.back()} className="text-primary-light text-sm mt-2">{t("students_go_back")}</button>
       </div>
     );
+  }
+
+  async function handleDeleteStudent() {
+    try {
+      await studentsService.deleteById(id);
+      router.replace("/students");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Erro ao excluir aluno");
+    }
   }
 
   async function handleGenerateInvite() {
@@ -106,12 +117,24 @@ export default function StudentProfilePage() {
 
       {/* Header */}
       <div style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "44px", paddingBottom: "16px" }}>
-        <button onClick={() => router.back()} className="flex items-center gap-1.5" style={{ color: "#A78BFA", fontSize: "14px", marginBottom: "12px" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          {t("nav_students")}
-        </button>
+        <div className="flex items-center justify-between" style={{ marginBottom: "12px" }}>
+          <button onClick={() => router.back()} className="flex items-center gap-1.5" style={{ color: "#A78BFA", fontSize: "14px" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {t("nav_students")}
+          </button>
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="flex items-center justify-center"
+            style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)" }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <path d="M3 6H5H21" stroke="#F87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6L18.1 20.1C18.0667 20.6 17.8448 21.0712 17.4786 21.4142C17.1123 21.7572 16.6303 21.9481 16.13 21.95H7.87C7.36974 21.9481 6.88768 21.7572 6.52144 21.4142C6.1552 21.0712 5.93327 20.6 5.9 20.1L5 6H19Z" stroke="#F87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
 
         <div className="flex items-center" style={{ gap: "14px" }}>
           <div
@@ -227,6 +250,14 @@ export default function StudentProfilePage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Excluir aluno"
+        message="Tem certeza que deseja excluir este aluno? Todo o histórico de aulas será mantido, mas o aluno não poderá mais ser acessado."
+        onConfirm={handleDeleteStudent}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   );
 }

@@ -45,6 +45,7 @@ export interface DevelopmentGoal {
   description: string;
   deadline?: string;
   student: Student;
+  completed: boolean;
 }
 
 export interface ProgressGoal {
@@ -53,6 +54,7 @@ export interface ProgressGoal {
   targetLessonNumber: number;
   student: Student;
   method: Method;
+  completed: boolean;
 }
 
 export type ClassStatus = "passed" | "pending" | "failed";

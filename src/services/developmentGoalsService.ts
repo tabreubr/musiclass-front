@@ -12,6 +12,11 @@ export const developmentGoalsService = {
     return response.data;
   },
 
+  toggleCompleted: async (id: number): Promise<DevelopmentGoal> => {
+    const response = await api.patch(`/development-goals/${id}/complete`);
+    return response.data;
+  },
+
   deleteById: async (id: number): Promise<void> => {
     await api.delete(`/development-goals/${id}`);
   },

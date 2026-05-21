@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Language } from "@/translations";
 import { instrumentsService } from "@/services/instrumentsService";
 import { useFetch } from "@/hooks/useFetch";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function SettingsPage() {
   const { data: instruments, refetch } = useFetch(() => instrumentsService.findAll());
   const [newInstrument, setNewInstrument] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmId, setConfirmId] = useState<number | null>(null);
 
   const languages: { value: Language; label: string; flag: string }[] = [
     { value: "en", label: t("settings_english"), flag: "🇺🇸" },
@@ -32,13 +34,16 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete() {
+    if (confirmId === null) return;
     try {
-      await instrumentsService.deleteById(id);
+      await instrumentsService.deleteById(confirmId);
       refetch();
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       alert(msg ?? "Cannot delete instrument in use by a student.");
+    } finally {
+      setConfirmId(null);
     }
   }
 
@@ -161,7 +166,7 @@ export default function SettingsPage() {
                     <span style={{ color: "#F1F5F9", fontSize: "15px", fontWeight: 500 }}>{inst.name}</span>
                   </div>
                   <button
-                    onClick={() => handleDelete(inst.id)}
+                    onClick={() => setConfirmId(inst.id)}
                     className="flex items-center justify-center transition-colors flex-shrink-0"
                     style={{ width: "30px", height: "30px", borderRadius: "9999px", background: "rgba(248,113,113,0.1)", color: "#F87171", fontSize: "20px", lineHeight: 1 }}
                   >
@@ -174,6 +179,14 @@ export default function SettingsPage() {
         </div>
 
       </div>
+
+      <ConfirmDialog
+        open={confirmId !== null}
+        title="Excluir instrumento"
+        message="Tem certeza que deseja excluir este instrumento? Ele não pode estar em uso por nenhum aluno."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmId(null)}
+      />
     </div>
   );
 }

@@ -12,6 +12,11 @@ export const progressGoalsService = {
     return response.data;
   },
 
+  toggleCompleted: async (id: number): Promise<ProgressGoal> => {
+    const response = await api.patch(`/progress-goals/${id}/complete`);
+    return response.data;
+  },
+
   deleteById: async (id: number): Promise<void> => {
     await api.delete(`/progress-goals/${id}`);
   },

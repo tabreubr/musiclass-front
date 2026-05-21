@@ -6,6 +6,7 @@ import { classesService } from "@/services/classesService";
 import { lessonsService } from "@/services/lessonsService";
 import { ClassItem, Lesson } from "@/types";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type Result = "passed" | "failed" | null;
 
@@ -48,6 +49,8 @@ export default function ClassDetailPage() {
   const [newPage, setNewPage] = useState("");
   const [newLessonNumber, setNewLessonNumber] = useState("");
   const [addingLesson, setAddingLesson] = useState(false);
+  const [confirmLessonId, setConfirmLessonId] = useState<number | null>(null);
+  const [confirmDeleteClass, setConfirmDeleteClass] = useState(false);
 
   useEffect(() => {
     classesService.findById(id)
@@ -75,10 +78,12 @@ export default function ClassDetailPage() {
     }
   }
 
-  async function handleDeleteLesson(lessonId: number) {
-    setLessons((prev) => prev.filter((l) => l.id !== lessonId));
+  async function handleDeleteLesson() {
+    if (confirmLessonId === null) return;
+    setLessons((prev) => prev.filter((l) => l.id !== confirmLessonId));
+    setConfirmLessonId(null);
     try {
-      await lessonsService.deleteFromClass(id, lessonId);
+      await lessonsService.deleteFromClass(id, confirmLessonId);
     } catch { /* silently ignore */ }
   }
 
@@ -98,6 +103,15 @@ export default function ClassDetailPage() {
       alert(err instanceof Error ? err.message : t("classes_err_add_lesson"));
     } finally {
       setAddingLesson(false);
+    }
+  }
+
+  async function handleDeleteClass() {
+    try {
+      await classesService.deleteById(id);
+      router.replace("/classes");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Erro ao excluir aula");
     }
   }
 
@@ -148,12 +162,24 @@ export default function ClassDetailPage() {
       <div
         style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "44px", paddingBottom: "16px" }}
       >
-        <button onClick={() => router.back()} className="flex items-center gap-1.5" style={{ color: "#A78BFA", fontSize: "14px", marginBottom: "12px" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          {t("nav_classes")}
-        </button>
+        <div className="flex items-center justify-between" style={{ marginBottom: "12px" }}>
+          <button onClick={() => router.back()} className="flex items-center gap-1.5" style={{ color: "#A78BFA", fontSize: "14px" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {t("nav_classes")}
+          </button>
+          <button
+            onClick={() => setConfirmDeleteClass(true)}
+            className="flex items-center justify-center"
+            style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)" }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <path d="M3 6H5H21" stroke="#F87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6L18.1 20.1C18.0667 20.6 17.8448 21.0712 17.4786 21.4142C17.1123 21.7572 16.6303 21.9481 16.13 21.95H7.87C7.36974 21.9481 6.88768 21.7572 6.52144 21.4142C6.1552 21.0712 5.93327 20.6 5.9 20.1L5 6H19Z" stroke="#F87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
 
         <div className="flex items-center" style={{ gap: "14px" }}>
           <div
@@ -268,7 +294,7 @@ export default function ClassDetailPage() {
                     {lessonLabel(lesson)}
                   </p>
                   <button
-                    onClick={() => handleDeleteLesson(lesson.id)}
+                    onClick={() => setConfirmLessonId(lesson.id)}
                     className="transition-colors"
                     style={{ color: "#64748B", fontSize: "20px", lineHeight: 1 }}
                   >
@@ -329,6 +355,21 @@ export default function ClassDetailPage() {
           {saving ? t("classes_saving") : saved ? t("classes_saved") : t("classes_save_changes")}
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmLessonId !== null}
+        title="Excluir lição"
+        message="Tem certeza que deseja remover esta lição da aula?"
+        onConfirm={handleDeleteLesson}
+        onCancel={() => setConfirmLessonId(null)}
+      />
+      <ConfirmDialog
+        open={confirmDeleteClass}
+        title="Excluir aula"
+        message="Tem certeza que deseja excluir esta aula? Todas as lições serão removidas."
+        onConfirm={handleDeleteClass}
+        onCancel={() => setConfirmDeleteClass(false)}
+      />
     </div>
   );
 }

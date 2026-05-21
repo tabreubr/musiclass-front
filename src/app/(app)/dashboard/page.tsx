@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { classesService } from "@/services/classesService";
 import { studentsService } from "@/services/studentsService";
+import { developmentGoalsService } from "@/services/developmentGoalsService";
+import { progressGoalsService } from "@/services/progressGoalsService";
 import { useFetch } from "@/hooks/useFetch";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,6 +39,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const { data: classes } = useFetch(() => classesService.findAll());
   const { data: students } = useFetch(() => studentsService.findAll());
+  const { data: devGoals } = useFetch(() => developmentGoalsService.findAll());
+  const { data: progGoals } = useFetch(() => progressGoalsService.findAll());
 
   const now = new Date();
   const upcoming = (classes ?? [])
@@ -53,6 +57,10 @@ export default function DashboardPage() {
     .filter((c) => new Date(c.date) <= now)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 2);
+
+  const completedGoals =
+    (devGoals ?? []).filter((g) => g.completed).length +
+    (progGoals ?? []).filter((g) => g.completed).length;
 
   const firstName = user?.name?.split(" ")[0] ?? "—";
 
@@ -155,7 +163,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-3 gap-3">
             <StatCard value={students?.length ?? 0} label={t("dash_students")} color="#A78BFA" icon="👥" accent="rgba(124,58,237,0.15)" />
             <StatCard value={classesThisMonth} label={t("dash_this_month")} color="#34D399" icon="📅" accent="rgba(52,211,153,0.12)" />
-            <StatCard value={0} label={t("dash_goals_done")} color="#FBBF24" icon="🎯" accent="rgba(251,191,36,0.12)" />
+            <StatCard value={completedGoals} label={t("dash_goals_done")} color="#FBBF24" icon="🎯" accent="rgba(251,191,36,0.12)" />
           </div>
         </div>
 

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 import { developmentGoalsService } from "@/services/developmentGoalsService";
 import { progressGoalsService } from "@/services/progressGoalsService";
 import { studentsService } from "@/services/studentsService";
 import { useFetch } from "@/hooks/useFetch";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { DevelopmentGoal, ProgressGoal } from "@/types";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type Tab = "development" | "progress";
 
@@ -51,6 +53,8 @@ export default function GoalsPage() {
   const [progStudentId, setProgStudentId] = useState("");
   const [savingProg, setSavingProg] = useState(false);
 
+  const [confirm, setConfirm] = useState<{ type: "dev" | "prog"; id: number } | null>(null);
+
   const totalGoals = (devGoals?.length ?? 0) + (progGoals?.length ?? 0);
 
   async function handleAddDev() {
@@ -60,13 +64,22 @@ export default function GoalsPage() {
       await developmentGoalsService.save({
         description: devDescription.trim(),
         deadline: devDeadline || undefined,
-        student: { id: Number(devStudentId) } as never,
-      });
+        student: { id: Number(devStudentId) },
+        completed: false,
+      } as never);
       setDevDescription(""); setDevDeadline(""); setDevStudentId("");
       setShowDevForm(false);
       refetchDev();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error");
+      if (axios.isAxiosError(err)) {
+        const data = err.response?.data;
+        const msg = Array.isArray(data)
+          ? data.map((e: { field: string; message: string }) => `${e.field}: ${e.message}`).join("\n")
+          : JSON.stringify(data);
+        alert("Erro do backend:\n" + msg);
+      } else {
+        alert(err instanceof Error ? err.message : "Error");
+      }
     } finally { setSavingDev(false); }
   }
 
@@ -88,8 +101,29 @@ export default function GoalsPage() {
     } finally { setSavingProg(false); }
   }
 
-  async function handleDeleteDev(id: number) { await developmentGoalsService.deleteById(id); refetchDev(); }
-  async function handleDeleteProg(id: number) { await progressGoalsService.deleteById(id); refetchProg(); }
+  async function handleToggleDev(id: number) {
+    const updated = await developmentGoalsService.toggleCompleted(id);
+    refetchDev();
+    return updated;
+  }
+
+  async function handleToggleProg(id: number) {
+    const updated = await progressGoalsService.toggleCompleted(id);
+    refetchProg();
+    return updated;
+  }
+
+  async function handleConfirmDelete() {
+    if (!confirm) return;
+    if (confirm.type === "dev") {
+      await developmentGoalsService.deleteById(confirm.id);
+      refetchDev();
+    } else {
+      await progressGoalsService.deleteById(confirm.id);
+      refetchProg();
+    }
+    setConfirm(null);
+  }
 
   function daysLabel(dateStr?: string): string {
     const diff = daysLeftRaw(dateStr);
@@ -199,7 +233,9 @@ export default function GoalsPage() {
                   subtitle={goal.student?.name ?? "—"}
                   daysLabel={daysLabel(goal.deadline)}
                   deadline={formatDeadline(goal.deadline)}
-                  onDelete={() => handleDeleteDev(goal.id)}
+                  completed={goal.completed}
+                  onToggle={() => handleToggleDev(goal.id)}
+                  onDelete={() => setConfirm({ type: "dev", id: goal.id })}
                 />
               ))}
           </>
@@ -250,7 +286,9 @@ export default function GoalsPage() {
                   subtitle={goal.student?.name ?? "—"}
                   daysLabel={daysLabel(goal.deadline)}
                   deadline={formatDeadline(goal.deadline)}
-                  onDelete={() => handleDeleteProg(goal.id)}
+                  completed={goal.completed}
+                  onToggle={() => handleToggleProg(goal.id)}
+                  onDelete={() => setConfirm({ type: "prog", id: goal.id })}
                 />
               ))}
           </>
@@ -274,35 +312,59 @@ export default function GoalsPage() {
       >
         {(tab === "development" ? showDevForm : showProgForm) ? "×" : "+"}
       </button>
+
+      <ConfirmDialog
+        open={confirm !== null}
+        title="Excluir meta"
+        message="Tem certeza que deseja excluir esta meta? Essa ação não pode ser desfeita."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   );
 }
 
-function GoalCard({ icon, accentColor, title, subtitle, daysLabel, deadline, onDelete }: {
+function GoalCard({ icon, accentColor, title, subtitle, daysLabel, deadline, completed, onToggle, onDelete }: {
   icon: string; accentColor: string; title: string; subtitle: string;
-  daysLabel: string; deadline: string; onDelete: () => void;
+  daysLabel: string; deadline: string; completed: boolean;
+  onToggle: () => void; onDelete: () => void;
 }) {
-  const isOverdue = daysLabel.includes("Overdue") || daysLabel.includes("Atrasada");
+  const isOverdue = !completed && (daysLabel.includes("Overdue") || daysLabel.includes("Atrasada"));
   return (
-    <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "18px", padding: "16px" }}>
+    <div style={{
+      background: completed ? "rgba(52,211,153,0.05)" : "#141728",
+      border: completed ? "1px solid rgba(52,211,153,0.2)" : "1px solid rgba(255,255,255,0.07)",
+      borderRadius: "18px",
+      padding: "16px",
+    }}>
       <div className="flex items-start" style={{ gap: "14px" }}>
-        <div
-          className="flex items-center justify-center flex-shrink-0"
-          style={{ width: "44px", height: "44px", borderRadius: "12px", fontSize: "20px", background: `${accentColor}1A`, border: `1px solid ${accentColor}33` }}
+        {/* Botão de toggle completo */}
+        <button
+          onClick={onToggle}
+          className="flex items-center justify-center flex-shrink-0 transition-all"
+          style={{
+            width: "44px", height: "44px", borderRadius: "12px", fontSize: "20px",
+            background: completed ? "rgba(52,211,153,0.15)" : `${accentColor}1A`,
+            border: completed ? "1px solid rgba(52,211,153,0.3)" : `1px solid ${accentColor}33`,
+          }}
         >
-          {icon}
-        </div>
+          {completed ? "✅" : icon}
+        </button>
         <div className="flex-1 min-w-0">
-          <p style={{ color: "#F1F5F9", fontSize: "14px", fontWeight: 500, lineHeight: "1.4" }}>{title}</p>
+          <p style={{ color: completed ? "#64748B" : "#F1F5F9", fontSize: "14px", fontWeight: 500, lineHeight: "1.4", textDecoration: completed ? "line-through" : "none" }}>
+            {title}
+          </p>
           <p style={{ color: "#64748B", fontSize: "12px", marginTop: "4px" }}>{subtitle}</p>
-          {deadline && (
+          {completed ? (
+            <p style={{ color: "#34D399", fontSize: "12px", fontWeight: 600, marginTop: "6px" }}>Meta concluída ✓</p>
+          ) : deadline ? (
             <div className="flex items-center" style={{ gap: "6px", marginTop: "8px" }}>
               <span style={{ color: "#64748B", fontSize: "12px" }}>{deadline}</span>
               <span style={{ color: isOverdue ? "#F87171" : "#F59E0B", fontSize: "12px", fontWeight: 600 }}>
                 · {daysLabel}
               </span>
             </div>
-          )}
+          ) : null}
         </div>
         <button
           onClick={onDelete}

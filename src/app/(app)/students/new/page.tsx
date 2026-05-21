@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { studentsService } from "@/services/studentsService";
 import { instrumentsService } from "@/services/instrumentsService";
-import { instructorsService } from "@/services/instructorsService";
 import { useFetch } from "@/hooks/useFetch";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -23,11 +22,9 @@ export default function NewStudentPage() {
   const { t } = useLanguage();
 
   const { data: instruments } = useFetch(() => instrumentsService.findAll());
-  const { data: instructors } = useFetch(() => instructorsService.findAll());
 
   const [name, setName] = useState("");
   const [instrumentId, setInstrumentId] = useState("");
-  const [instructorId, setInstructorId] = useState("");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -35,7 +32,6 @@ export default function NewStudentPage() {
     const newErrors: Record<string, string> = {};
     if (!name.trim()) newErrors.name = t("students_err_name");
     if (!instrumentId) newErrors.instrument = t("students_err_instrument");
-    if (!instructorId) newErrors.instructor = t("students_err_instructor");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -46,9 +42,8 @@ export default function NewStudentPage() {
     try {
       const created = await studentsService.save({
         name: name.trim(),
-        instrument: { id: Number(instrumentId) } as never,
-        instructor: { id: Number(instructorId) } as never,
-      });
+        instrumentId: Number(instrumentId),
+      } as never);
       router.push(`/students/${created.id}`);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Error creating student");
@@ -107,24 +102,6 @@ export default function NewStudentPage() {
             ))}
           </select>
           {errors.instrument && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "8px" }}>{errors.instrument}</p>}
-        </div>
-
-        <div style={{ ...cardStyle, borderRadius: "20px", padding: "20px" }}>
-          <label style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: "12px" }}>
-            {t("students_instructor")}
-          </label>
-          <select
-            value={instructorId}
-            onChange={(e) => setInstructorId(e.target.value)}
-            className="w-full outline-none"
-            style={{ background: "transparent", color: "#F1F5F9", fontSize: "16px" }}
-          >
-            <option value="" style={{ background: "#141728" }}>{t("students_select_instructor")}</option>
-            {(instructors ?? []).map((i) => (
-              <option key={i.id} value={i.id} style={{ background: "#141728" }}>{i.name}</option>
-            ))}
-          </select>
-          {errors.instructor && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "8px" }}>{errors.instructor}</p>}
         </div>
 
         <button

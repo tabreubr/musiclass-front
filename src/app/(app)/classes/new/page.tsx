@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { classesService } from "@/services/classesService";
 import { studentsService } from "@/services/studentsService";
-import { instructorsService } from "@/services/instructorsService";
 import { useFetch } from "@/hooks/useFetch";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -23,10 +22,8 @@ export default function NewClassPage() {
   const { t } = useLanguage();
 
   const { data: students } = useFetch(() => studentsService.findAll());
-  const { data: instructors } = useFetch(() => instructorsService.findAll());
 
   const [studentId, setStudentId] = useState("");
-  const [instructorId, setInstructorId] = useState("");
   const [date, setDate] = useState("");
   const [observations, setObservations] = useState("");
   const [saving, setSaving] = useState(false);
@@ -35,7 +32,6 @@ export default function NewClassPage() {
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
     if (!studentId) newErrors.student = t("classes_err_student");
-    if (!instructorId) newErrors.instructor = t("classes_err_instructor");
     if (!date) newErrors.date = t("classes_err_date");
     else if (new Date(date) <= new Date()) newErrors.date = t("classes_err_date_future");
     setErrors(newErrors);
@@ -49,9 +45,8 @@ export default function NewClassPage() {
       const created = await classesService.save({
         date,
         observations,
-        student: { id: Number(studentId) } as never,
-        instructor: { id: Number(instructorId) } as never,
-      });
+        studentId: Number(studentId),
+      } as never);
       router.push(`/classes/${created.id}`);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Error creating class");
@@ -97,26 +92,6 @@ export default function NewClassPage() {
             ))}
           </select>
           {errors.student && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "6px" }}>{errors.student}</p>}
-        </div>
-
-        <div style={{ ...cardStyle, borderRadius: "16px", padding: "13px 16px" }}>
-          <label style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: "8px" }}>
-            {t("classes_instructor")}
-          </label>
-          <select
-            value={instructorId}
-            onChange={(e) => setInstructorId(e.target.value)}
-            className="w-full outline-none"
-            style={{ background: "transparent", color: "#F1F5F9", fontSize: "15px" }}
-          >
-            <option value="" style={{ background: "#141728" }}>{t("classes_select_instructor")}</option>
-            {(instructors ?? []).map((i) => (
-              <option key={i.id} value={i.id} style={{ background: "#141728" }}>
-                {i.name}
-              </option>
-            ))}
-          </select>
-          {errors.instructor && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "6px" }}>{errors.instructor}</p>}
         </div>
 
         <div style={{ ...cardStyle, borderRadius: "16px", padding: "13px 16px" }}>
