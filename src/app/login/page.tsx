@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Tipo do modo de login ativo
+type LoginMode = "instructor" | "student";
+
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, studentLogin } = useAuth();
+  const [mode, setMode] = useState<LoginMode>("instructor");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,8 +22,12 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await login({ email, password });
-      // login() já redireciona para /dashboard em caso de sucesso
+      // Chama o endpoint correto dependendo do modo selecionado
+      if (mode === "instructor") {
+        await login({ email, password });
+      } else {
+        await studentLogin({ email, password });
+      }
     } catch {
       setError("Email ou senha incorretos. Tente novamente.");
     } finally {
@@ -52,11 +60,34 @@ export default function LoginPage() {
         </div>
       </div>
 
+      {/* Toggle Instrutor / Aluno */}
+      <div className="flex w-full bg-primary-dark rounded-full p-1 mb-6">
+        <button
+          type="button"
+          onClick={() => { setMode("instructor"); setError(null); }}
+          className={`flex-1 py-2 rounded-full text-sm font-semibold transition-all ${
+            mode === "instructor"
+              ? "bg-white text-primary"
+              : "text-primary-light hover:text-white"
+          }`}
+        >
+          Instrutor
+        </button>
+        <button
+          type="button"
+          onClick={() => { setMode("student"); setError(null); }}
+          className={`flex-1 py-2 rounded-full text-sm font-semibold transition-all ${
+            mode === "student"
+              ? "bg-white text-primary"
+              : "text-primary-light hover:text-white"
+          }`}
+        >
+          Aluno
+        </button>
+      </div>
+
       {/* Formulário */}
-      <form
-        onSubmit={handleLogin}
-        className="w-full flex flex-col gap-4"
-      >
+      <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
         <Input
           type="email"
           placeholder="Email"
@@ -68,7 +99,7 @@ export default function LoginPage() {
 
         <Input
           type="password"
-          placeholder="Password"
+          placeholder="Senha"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -89,13 +120,6 @@ export default function LoginPage() {
           {loading ? "Entrando..." : "Entrar"}
         </Button>
       </form>
-
-      {/* Links */}
-      <div className="flex flex-col items-center gap-3 mt-6">
-        <button className="text-primary-light text-sm hover:text-white transition-colors">
-          Esqueceu a senha?
-        </button>
-      </div>
 
       {/* Decoração musical */}
       <div className="absolute top-8 right-8 opacity-20 text-white text-4xl select-none">♩</div>

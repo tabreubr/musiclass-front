@@ -181,6 +181,21 @@ export const translations = {
     settings_instrument_placeholder: "Instrument name...",
     settings_instrument_add: "Add",
     settings_instrument_empty: "No instruments yet",
+
+    // Invite
+    invite_title: "You've been invited!",
+    invite_subtitle: "Create your account to access Musiclass",
+    invite_email_placeholder: "Enter your email...",
+    invite_password_placeholder: "Create a password...",
+    invite_submit: "Create Account",
+    invite_submitting: "Creating account...",
+    invite_success_title: "Account created!",
+    invite_success_subtitle: "You can now log in with your credentials.",
+    invite_success_btn: "Go to Login",
+    invite_err_fields: "Fill in all fields",
+    invite_err_expired: "This invite link has expired or was already used.",
+    invite_err_invalid: "This invite link is invalid.",
+    invite_err_generic: "Something went wrong. Try again.",
   },
   pt: {
     // Nav
@@ -362,6 +377,21 @@ export const translations = {
     settings_instrument_placeholder: "Nome do instrumento...",
     settings_instrument_add: "Adicionar",
     settings_instrument_empty: "Nenhum instrumento ainda",
+
+    // Invite
+    invite_title: "Você foi convidado!",
+    invite_subtitle: "Crie sua conta para acessar a Musiclass",
+    invite_email_placeholder: "Digite seu email...",
+    invite_password_placeholder: "Crie uma senha...",
+    invite_submit: "Criar Conta",
+    invite_submitting: "Criando conta...",
+    invite_success_title: "Conta criada!",
+    invite_success_subtitle: "Agora você pode entrar com suas credenciais.",
+    invite_success_btn: "Ir para o Login",
+    invite_err_fields: "Preencha todos os campos",
+    invite_err_expired: "Este link de convite expirou ou já foi usado.",
+    invite_err_invalid: "Este link de convite é inválido.",
+    invite_err_generic: "Algo deu errado. Tente novamente.",
   },
 } as const;
 

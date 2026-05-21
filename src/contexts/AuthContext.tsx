@@ -10,7 +10,7 @@ interface AuthUser {
   id: number;
   name: string;
   email: string;
-  role: "INSTRUCTOR" | "ADMIN";
+  role: "INSTRUCTOR" | "ADMIN" | "STUDENT";
 }
 
 interface AuthContextValue {
@@ -19,6 +19,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
+  studentLogin: (data: LoginRequest) => Promise<void>;
   logout: () => void;
 }
 
@@ -50,10 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(async (data: LoginRequest) => {
-    const response: LoginResponse = await authService.login(data);
-
-    // Persiste no localStorage
+  // Função auxiliar para salvar sessão e atualizar estado
+  const saveSession = useCallback((response: LoginResponse, redirectTo: string) => {
     localStorage.setItem("token", response.token);
     localStorage.setItem(
       "user",
@@ -64,8 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: response.role,
       })
     );
-
-    // Atualiza estado
     setToken(response.token);
     setUser({
       id: response.id,
@@ -73,9 +70,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: response.email,
       role: response.role,
     });
-
-    router.push("/dashboard");
+    router.push(redirectTo);
   }, [router]);
+
+  // Login do instrutor — redireciona para o dashboard de instrutor
+  const login = useCallback(async (data: LoginRequest) => {
+    const response: LoginResponse = await authService.login(data);
+    saveSession(response, "/dashboard");
+  }, [saveSession]);
+
+  // Login do aluno — redireciona para a área do aluno
+  const studentLogin = useCallback(async (data: LoginRequest) => {
+    const response: LoginResponse = await authService.studentLogin(data);
+    saveSession(response, "/student");
+  }, [saveSession]);
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
@@ -91,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!token,
     isLoading,
     login,
+    studentLogin,
     logout,
   };
 
