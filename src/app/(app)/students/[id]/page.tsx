@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { studentsService } from "@/services/studentsService";
+import { inviteService, InviteResponse } from "@/services/inviteService";
 import { Student, ClassItem } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -26,6 +27,9 @@ export default function StudentProfilePage() {
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [invite, setInvite] = useState<InviteResponse | null>(null);
+  const [generatingInvite, setGeneratingInvite] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     studentsService.findById(id)
@@ -62,6 +66,25 @@ export default function StudentProfilePage() {
         <button onClick={() => router.back()} className="text-primary text-sm mt-2">{t("students_go_back")}</button>
       </div>
     );
+  }
+
+  async function handleGenerateInvite() {
+    setGeneratingInvite(true);
+    try {
+      const result = await inviteService.generate(id);
+      setInvite(result);
+    } catch {
+      alert("Erro ao gerar convite");
+    } finally {
+      setGeneratingInvite(false);
+    }
+  }
+
+  async function handleCopyLink() {
+    if (!invite) return;
+    await navigator.clipboard.writeText(invite.inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   const instrumentName = student.instrument?.name ?? "—";
@@ -108,6 +131,37 @@ export default function StudentProfilePage() {
           <StatCard value={total} label={t("students_total_classes")} color="text-primary" />
           <StatCard value={passed} label={t("students_passed")} color="text-status-passed" />
           <StatCard value={failed} label={t("students_failed")} color="text-status-failed" />
+        </div>
+
+        {/* Convite */}
+        <div className="bg-white rounded-2xl p-4 border border-border">
+          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">
+            Convite de Acesso
+          </p>
+          {!invite ? (
+            <button
+              onClick={handleGenerateInvite}
+              disabled={generatingInvite}
+              className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-60"
+            >
+              {generatingInvite ? "Gerando..." : "🔗 Gerar Link de Convite"}
+            </button>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p className="text-xs text-text-secondary break-all bg-gray-50 rounded-xl px-3 py-2">
+                {invite.inviteLink}
+              </p>
+              <button
+                onClick={handleCopyLink}
+                className="w-full py-2.5 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition-colors"
+              >
+                {copied ? "✓ Copiado!" : "Copiar Link"}
+              </button>
+              <p className="text-xs text-text-secondary text-center">
+                Expira em 7 dias
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Histórico */}

@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { ClassItem } from "@/types";
 import { useFetch } from "@/hooks/useFetch";
 import { studentAreaService } from "@/services/studentAreaService";
 import { Badge } from "@/components/ui/Badge";
@@ -25,6 +26,35 @@ function formatDate(dateStr: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+// Card de aula clicável — navega para o detalhe
+function ClassCard({ c, onClick }: { c: ClassItem; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm text-left w-full hover:border-primary/30 transition-colors"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm font-semibold text-gray-800">{formatDate(c.date)}</p>
+        <div className="flex items-center gap-2">
+          <Badge status={getStatus(c.passed)} />
+          <span className="text-gray-300 text-sm">›</span>
+        </div>
+      </div>
+      {c.instructor && (
+        <p className="text-xs text-gray-400">Instrutor: {c.instructor.name}</p>
+      )}
+      {c.observations && (
+        <p className="text-xs text-gray-500 mt-1 italic">{c.observations}</p>
+      )}
+      {c.lessons.length > 0 && (
+        <p className="text-xs text-primary mt-2 font-medium">
+          {c.lessons.filter((l) => l.completed).length}/{c.lessons.length} lições concluídas
+        </p>
+      )}
+    </button>
+  );
 }
 
 export default function StudentPage() {
@@ -106,25 +136,7 @@ export default function StudentPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {upcoming.map((c) => (
-                <div key={c.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-gray-800">{formatDate(c.date)}</p>
-                    <Badge status={getStatus(c.passed)} />
-                  </div>
-                  {c.instructor && (
-                    <p className="text-xs text-gray-400">
-                      Instrutor: {c.instructor.name}
-                    </p>
-                  )}
-                  {c.observations && (
-                    <p className="text-xs text-gray-500 mt-1 italic">{c.observations}</p>
-                  )}
-                  {c.lessons.length > 0 && (
-                    <p className="text-xs text-primary mt-2 font-medium">
-                      {c.lessons.filter((l) => l.completed).length}/{c.lessons.length} lições concluídas
-                    </p>
-                  )}
-                </div>
+                <ClassCard key={c.id} c={c} onClick={() => router.push(`/student/classes/${c.id}`)} />
               ))}
             </div>
           )}
@@ -136,21 +148,8 @@ export default function StudentPage() {
             <h2 className="text-base font-bold text-gray-800 mb-3">Histórico</h2>
             <div className="flex flex-col gap-3">
               {past.map((c) => (
-                <div key={c.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm opacity-80">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-gray-800">{formatDate(c.date)}</p>
-                    <Badge status={getStatus(c.passed)} />
-                  </div>
-                  {c.instructor && (
-                    <p className="text-xs text-gray-400">
-                      Instrutor: {c.instructor.name}
-                    </p>
-                  )}
-                  {c.lessons.length > 0 && (
-                    <p className="text-xs text-primary mt-1 font-medium">
-                      {c.lessons.filter((l) => l.completed).length}/{c.lessons.length} lições concluídas
-                    </p>
-                  )}
+                <div key={c.id} className="opacity-80">
+                  <ClassCard c={c} onClick={() => router.push(`/student/classes/${c.id}`)} />
                 </div>
               ))}
             </div>
