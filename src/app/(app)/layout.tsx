@@ -19,7 +19,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   // Enquanto verifica o localStorage, não renderiza nada
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center" style={{ minHeight: "100dvh", background: "#0A0D1A" }}>
         <span className="text-4xl animate-spin">⏳</span>
       </div>
     );
@@ -34,8 +34,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <LanguageProvider>
       <AuthGuard>
-        <div className="min-h-screen bg-[#F8FAFC]">
-          <main className="pb-[88px] max-w-[430px] mx-auto">{children}</main>
+        <div style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
+          <main style={{ minHeight: "100dvh", paddingBottom: "88px" }}>{children}</main>
           <BottomNav />
         </div>
       </AuthGuard>

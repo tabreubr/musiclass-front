@@ -11,18 +11,18 @@ type Result = "passed" | "failed" | null;
 
 function formatDateTime(dateStr: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString("pt-BR", {
     weekday: "long",
     month: "long",
     day: "numeric",
     year: "numeric",
-  }) + " · " + date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  }) + " · " + date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
 function lessonLabel(lesson: Lesson): string {
   const method = lesson.methodName?.name ?? "—";
   const parts = [];
-  if (lesson.lessonNumber != null) parts.push(`Lesson ${lesson.lessonNumber}`);
+  if (lesson.lessonNumber != null) parts.push(`Lição ${lesson.lessonNumber}`);
   if (lesson.page != null) parts.push(`p. ${lesson.page}`);
   return parts.length > 0 ? `${method} — ${parts.join(", ")}` : method;
 }
@@ -43,7 +43,6 @@ export default function ClassDetailPage() {
   const [saved, setSaved] = useState(false);
 
   const [lessons, setLessons] = useState<Lesson[]>([]);
-
   const [showAddLesson, setShowAddLesson] = useState(false);
   const [newMethodName, setNewMethodName] = useState("");
   const [newPage, setNewPage] = useState("");
@@ -80,9 +79,7 @@ export default function ClassDetailPage() {
     setLessons((prev) => prev.filter((l) => l.id !== lessonId));
     try {
       await lessonsService.deleteFromClass(id, lessonId);
-    } catch {
-      // silently ignore
-    }
+    } catch { /* silently ignore */ }
   }
 
   async function handleAddLesson() {
@@ -95,9 +92,7 @@ export default function ClassDetailPage() {
         lessonNumber: newLessonNumber ? Number(newLessonNumber) : undefined,
       });
       setLessons((prev) => [...prev, created]);
-      setNewMethodName("");
-      setNewPage("");
-      setNewLessonNumber("");
+      setNewMethodName(""); setNewPage(""); setNewLessonNumber("");
       setShowAddLesson(false);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : t("classes_err_add_lesson"));
@@ -108,8 +103,7 @@ export default function ClassDetailPage() {
 
   async function handleSave() {
     if (!classItem) return;
-    setSaving(true);
-    setSaved(false);
+    setSaving(true); setSaved(false);
     try {
       await classesService.updateById(id, {
         passed: result === "passed" ? true : result === "failed" ? false : classItem.passed,
@@ -135,111 +129,134 @@ export default function ClassDetailPage() {
 
   if (error || !classItem) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-red-500 gap-3">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-3">
         <span className="text-4xl">⚠️</span>
-        <p className="font-medium">{error ?? t("classes_not_found")}</p>
-        <button onClick={() => router.back()} className="text-primary text-sm mt-2">{t("classes_go_back")}</button>
+        <p className="font-medium text-red-400">{error ?? t("classes_not_found")}</p>
+        <button onClick={() => router.back()} className="text-primary-light text-sm mt-2">{t("classes_go_back")}</button>
       </div>
     );
   }
 
   const instrumentName = classItem.student?.instrument?.name ?? "—";
   const doneCount = lessons.filter((l) => l.completed).length;
+  const initials = classItem.student?.name?.[0]?.toUpperCase() ?? "?";
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
 
       {/* Header */}
-      <div className="bg-white px-6 pt-14 pb-4 border-b border-border" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-        <button onClick={() => router.back()} className="flex items-center gap-1 text-text-secondary text-sm mb-2">
+      <div
+        style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "44px", paddingBottom: "16px" }}
+      >
+        <button onClick={() => router.back()} className="flex items-center gap-1.5" style={{ color: "#A78BFA", fontSize: "14px", marginBottom: "12px" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           {t("nav_classes")}
         </button>
-        <h1 className="text-lg font-bold text-text-primary">{classItem.student?.name ?? "—"}</h1>
-        <p className="text-sm text-text-secondary mt-0.5">{instrumentName} · {formatDateTime(classItem.date)}</p>
+
+        <div className="flex items-center" style={{ gap: "14px" }}>
+          <div
+            className="flex items-center justify-center font-bold text-white flex-shrink-0"
+            style={{ width: "48px", height: "48px", borderRadius: "14px", fontSize: "18px", background: "linear-gradient(135deg, #7C3AED, #A855F7)", boxShadow: "0 6px 18px rgba(124,58,237,0.4)" }}
+          >
+            {initials}
+          </div>
+          <div>
+            <h1 style={{ color: "#F1F5F9", fontSize: "18px", fontWeight: 700 }}>{classItem.student?.name ?? "—"}</h1>
+            <p style={{ color: "#A78BFA", fontSize: "13px", marginTop: "1px" }}>{instrumentName}</p>
+            <p style={{ color: "#64748B", fontSize: "12px", marginTop: "1px" }}>{formatDateTime(classItem.date)}</p>
+          </div>
+        </div>
       </div>
 
       {/* Conteúdo */}
-      <div className="flex-1 px-6 py-5 flex flex-col gap-4" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "14px", paddingBottom: "8px", gap: "10px" }}>
 
         {/* Instrutor */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
+        <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "14px 18px" }}>
           <div className="flex justify-between items-center">
-            <span className="text-text-secondary text-sm">{t("classes_instructor")}</span>
-            <span className="text-text-primary text-sm font-medium">{classItem.instructor?.name ?? "—"}</span>
+            <span style={{ color: "#64748B", fontSize: "14px" }}>{t("classes_instructor")}</span>
+            <span style={{ color: "#F1F5F9", fontSize: "14px", fontWeight: 600 }}>{classItem.instructor?.name ?? "—"}</span>
           </div>
         </div>
 
         {/* Lições */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <div className="flex justify-between items-center mb-3">
+        <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "14px 18px" }}>
+          <div className="flex justify-between items-center" style={{ marginBottom: "10px" }}>
             <div>
-              <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide">{t("classes_lessons")}</p>
+              <p style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>{t("classes_lessons")}</p>
               {lessons.length > 0 && (
-                <p className="text-text-secondary text-xs mt-0.5">
+                <p style={{ color: "#64748B", fontSize: "12px", marginTop: "2px" }}>
                   {doneCount}/{lessons.length} {t("classes_completed")}
                 </p>
               )}
             </div>
             <button
               onClick={() => setShowAddLesson((v) => !v)}
-              className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold text-lg"
+              className="flex items-center justify-center font-bold transition-colors"
+              style={{ width: "32px", height: "32px", borderRadius: "10px", background: "rgba(124,58,237,0.15)", color: "#A78BFA", fontSize: "20px" }}
             >
               {showAddLesson ? "−" : "+"}
             </button>
           </div>
 
-          {/* Formulário de nova lição */}
           {showAddLesson && (
-            <div className="mb-3 p-3 bg-surface-secondary rounded-xl flex flex-col gap-2">
+            <div
+              className="flex flex-col"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "14px", padding: "14px", gap: "10px", marginBottom: "16px" }}
+            >
               <input
                 value={newMethodName}
                 onChange={(e) => setNewMethodName(e.target.value)}
                 placeholder={t("classes_method")}
-                className="w-full text-sm bg-white rounded-lg px-3 py-2 outline-none border border-border"
+                className="w-full outline-none"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: "12px", padding: "12px 14px", fontSize: "14px", color: "#F1F5F9" }}
               />
-              <div className="flex gap-2">
+              <div className="flex" style={{ gap: "10px" }}>
                 <input
                   value={newLessonNumber}
                   onChange={(e) => setNewLessonNumber(e.target.value)}
                   placeholder={t("classes_lesson_number")}
                   type="number"
-                  className="flex-1 text-sm bg-white rounded-lg px-3 py-2 outline-none border border-border"
+                  className="flex-1 outline-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: "12px", padding: "12px 14px", fontSize: "14px", color: "#F1F5F9", minWidth: "0" }}
                 />
                 <input
                   value={newPage}
                   onChange={(e) => setNewPage(e.target.value)}
                   placeholder={t("classes_page")}
                   type="number"
-                  className="flex-1 text-sm bg-white rounded-lg px-3 py-2 outline-none border border-border"
+                  className="flex-1 outline-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: "12px", padding: "12px 14px", fontSize: "14px", color: "#F1F5F9", minWidth: "0" }}
                 />
               </div>
               <button
                 onClick={handleAddLesson}
                 disabled={addingLesson || !newMethodName.trim()}
-                className="w-full py-2 bg-primary text-white text-sm font-semibold rounded-lg disabled:opacity-50"
+                className="w-full font-semibold disabled:opacity-50 transition-all"
+                style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white", borderRadius: "12px", padding: "12px", fontSize: "14px" }}
               >
                 {addingLesson ? t("classes_adding") : t("classes_add_lesson")}
               </button>
             </div>
           )}
 
-          {/* Lista de lições */}
           {lessons.length === 0 ? (
-            <p className="text-text-secondary text-sm text-center py-4">{t("classes_no_lessons_hint")}</p>
+            <p style={{ color: "#64748B", fontSize: "14px", textAlign: "center", paddingTop: "12px", paddingBottom: "12px" }}>{t("classes_no_lessons_hint")}</p>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col" style={{ gap: "14px" }}>
               {lessons.map((lesson) => (
-                <div key={lesson.id} className="flex items-center gap-3">
+                <div key={lesson.id} className="flex items-center" style={{ gap: "14px" }}>
                   <button
                     onClick={() => handleToggle(lesson)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                      lesson.completed
-                        ? "bg-status-passed border-status-passed"
-                        : "border-border bg-white"
-                    }`}
+                    className="flex items-center justify-center flex-shrink-0 transition-all"
+                    style={{
+                      width: "26px", height: "26px", borderRadius: "50%", border: "2px solid",
+                      ...(lesson.completed
+                        ? { background: "#34D399", borderColor: "#34D399" }
+                        : { borderColor: "rgba(255,255,255,0.2)", background: "transparent" })
+                    }}
                   >
                     {lesson.completed && (
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
@@ -247,12 +264,13 @@ export default function ClassDetailPage() {
                       </svg>
                     )}
                   </button>
-                  <p className={`flex-1 text-sm ${lesson.completed ? "line-through text-text-secondary" : "text-text-primary"}`}>
+                  <p className="flex-1" style={{ fontSize: "14px", color: lesson.completed ? "#64748B" : "#F1F5F9", textDecoration: lesson.completed ? "line-through" : "none" }}>
                     {lessonLabel(lesson)}
                   </p>
                   <button
                     onClick={() => handleDeleteLesson(lesson.id)}
-                    className="text-text-secondary hover:text-status-failed transition-colors text-lg leading-none"
+                    className="transition-colors"
+                    style={{ color: "#64748B", fontSize: "20px", lineHeight: 1 }}
                   >
                     ×
                   </button>
@@ -263,9 +281,9 @@ export default function ClassDetailPage() {
         </div>
 
         {/* Resultado */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">{t("classes_result")}</p>
-          <div className="flex gap-2">
+        <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "14px 18px" }}>
+          <p style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>{t("classes_result")}</p>
+          <div className="flex" style={{ gap: "8px" }}>
             {(["passed", "pending", "failed"] as const).map((r) => (
               <ResultButton
                 key={r}
@@ -279,16 +297,17 @@ export default function ClassDetailPage() {
         </div>
 
         {/* Observações */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">
+        <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "14px 18px" }}>
+          <p style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>
             {t("classes_observations").replace("...", "")}
           </p>
           <textarea
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
             placeholder={t("classes_obs_detail_placeholder")}
-            rows={4}
-            className="w-full text-sm text-text-primary placeholder-text-secondary resize-none outline-none"
+            rows={3}
+            className="w-full resize-none outline-none"
+            style={{ background: "transparent", color: "#F1F5F9", fontSize: "14px", lineHeight: "1.5" }}
           />
         </div>
 
@@ -296,8 +315,16 @@ export default function ClassDetailPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full py-4 bg-primary text-white font-semibold rounded-2xl active:scale-95 transition-transform disabled:opacity-60"
-          style={{ marginBottom: '8px' }}
+          className="w-full font-semibold active:scale-95 transition-transform disabled:opacity-60"
+          style={{
+            borderRadius: "16px",
+            padding: "15px",
+            fontSize: "15px",
+            ...(saved
+              ? { background: "rgba(52,211,153,0.15)", border: "1px solid rgba(52,211,153,0.3)", color: "#34D399" }
+              : { background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white", boxShadow: "0 8px 24px rgba(124,58,237,0.3)" }
+            )
+          }}
         >
           {saving ? t("classes_saving") : saved ? t("classes_saved") : t("classes_save_changes")}
         </button>
@@ -306,20 +333,36 @@ export default function ClassDetailPage() {
   );
 }
 
-const colorMap = {
-  green: { active: "bg-status-passed text-white", inactive: "bg-green-50 text-status-passed" },
-  amber: { active: "bg-status-pending text-white", inactive: "bg-amber-50 text-status-pending" },
-  red:   { active: "bg-status-failed text-white",  inactive: "bg-red-50 text-status-failed"  },
+const resultStyles = {
+  green: {
+    active: { background: "rgba(52,211,153,0.15)", border: "1px solid rgba(52,211,153,0.3)", color: "#34D399" },
+    inactive: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "#64748B" },
+  },
+  amber: {
+    active: { background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.3)", color: "#F59E0B" },
+    inactive: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "#64748B" },
+  },
+  red: {
+    active: { background: "rgba(248,113,113,0.15)", border: "1px solid rgba(248,113,113,0.3)", color: "#F87171" },
+    inactive: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "#64748B" },
+  },
 };
 
 function ResultButton({ label, color, active, onClick }: {
   label: string; color: "green" | "amber" | "red"; active: boolean; onClick: () => void;
 }) {
-  const styles = colorMap[color];
+  const styles = resultStyles[color];
   return (
     <button
       onClick={onClick}
-      className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 ${active ? styles.active : styles.inactive}`}
+      className="flex-1 font-semibold transition-all active:scale-95"
+      style={{
+        borderRadius: "10px",
+        paddingTop: "11px",
+        paddingBottom: "11px",
+        fontSize: "13px",
+        ...(active ? styles.active : styles.inactive),
+      }}
     >
       {label}
     </button>

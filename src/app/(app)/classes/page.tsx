@@ -52,12 +52,23 @@ export default function ClassesPage() {
   );
 
   return (
-    <div className="bg-[#F8FAFC]">
+    <div style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
 
       {/* Header */}
-      <div className="bg-white px-6 pt-14 pb-5 shadow-sm" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-        <h1 className="text-xl font-semibold text-[#1E3A5F] mb-5">{t("classes_title")}</h1>
-        <div className="flex flex-col gap-4">
+      <div
+        style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "56px", paddingBottom: "20px" }}
+      >
+        <div style={{ marginBottom: "20px" }}>
+          <p style={{ color: "#A78BFA", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>
+            {t("classes_title")}
+          </p>
+          {!loading && !error && (
+            <h1 style={{ color: "#F1F5F9", fontSize: "26px", fontWeight: 800, letterSpacing: "-0.5px" }}>
+              {filtered.length} aulas
+            </h1>
+          )}
+        </div>
+        <div className="flex flex-col" style={{ gap: "12px" }}>
           <SearchBar
             placeholder={t("classes_search")}
             value={search}
@@ -72,7 +83,7 @@ export default function ClassesPage() {
       </div>
 
       {/* Lista */}
-      <div className="px-6 py-4 flex flex-col gap-3.5" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "20px", paddingBottom: "20px", gap: "12px" }}>
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
             <span className="text-4xl mb-3 animate-spin">⏳</span>
@@ -80,10 +91,9 @@ export default function ClassesPage() {
           </div>
         )}
         {error && (
-          <div className="flex flex-col items-center justify-center py-16 text-red-500">
+          <div className="flex flex-col items-center justify-center py-16">
             <span className="text-4xl mb-3">⚠️</span>
-            <p className="font-medium">{t("classes_error")}</p>
-            <p className="text-sm text-text-secondary mt-1">{error}</p>
+            <p className="font-medium text-red-400">{t("classes_error")}</p>
           </div>
         )}
         {!loading && !error && filtered.length === 0 && (
@@ -104,7 +114,11 @@ export default function ClassesPage() {
       {/* FAB */}
       <button
         onClick={() => router.push("/classes/new")}
-        className="fixed bottom-24 right-5 w-14 h-14 bg-primary rounded-full shadow-lg flex items-center justify-center text-white text-3xl active:scale-95 transition-transform z-40"
+        className="fixed bottom-24 right-5 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl active:scale-95 transition-transform z-40"
+        style={{
+          background: "linear-gradient(135deg, #7C3AED, #A855F7)",
+          boxShadow: "0 8px 24px rgba(124,58,237,0.5)",
+        }}
       >
         +
       </button>

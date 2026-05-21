@@ -13,7 +13,7 @@ type Tab = "development" | "progress";
 function formatDeadline(dateStr?: string): string {
   if (!dateStr) return "";
   const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(year, month - 1, day).toLocaleDateString("pt-BR", { month: "short", day: "numeric", year: "numeric" });
 }
 
 function daysLeftRaw(dateStr?: string): number | null {
@@ -23,6 +23,12 @@ function daysLeftRaw(dateStr?: string): number | null {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
+
+const inputStyle: React.CSSProperties = {
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.09)",
+  color: "#F1F5F9",
+};
 
 export default function GoalsPage() {
   const { t } = useLanguage();
@@ -46,8 +52,6 @@ export default function GoalsPage() {
   const [savingProg, setSavingProg] = useState(false);
 
   const totalGoals = (devGoals?.length ?? 0) + (progGoals?.length ?? 0);
-  const activeGoals = totalGoals;
-  const overallProgress = totalGoals > 0 ? Math.round((activeGoals / totalGoals) * 100) : 0;
 
   async function handleAddDev() {
     if (!devDescription.trim() || !devStudentId) return;
@@ -95,28 +99,51 @@ export default function GoalsPage() {
     return `${diff} ${t("goals_days_left")}`;
   }
 
+  function handleFab() {
+    if (tab === "development") setShowDevForm((v) => !v);
+    else setShowProgForm((v) => !v);
+  }
+
+  const fieldStyle: React.CSSProperties = {
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.09)",
+    borderRadius: "12px",
+    padding: "11px 14px",
+    fontSize: "14px",
+    color: "#F1F5F9",
+    width: "100%",
+    outline: "none",
+  };
+
   return (
-    <div className="bg-[#F8FAFC]">
+    <div style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
 
       {/* Header */}
-      <div className="bg-white px-6 pt-14 pb-4 border-b border-border" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-        <h1 className="text-lg font-bold text-text-primary">{t("goals_title")}</h1>
-        <div className="flex items-center gap-4 mt-3">
-          <span className="text-sm text-text-secondary">{t("goals_active_goals")}: <strong className="text-text-primary">{totalGoals}</strong></span>
-          <span className="text-sm text-text-secondary">{t("goals_completed")}: <strong className="text-green-600">0</strong></span>
+      <div style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "44px", paddingBottom: "16px" }}>
+        <p style={{ color: "#A78BFA", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>{t("goals_title")}</p>
+        <div className="flex items-baseline" style={{ gap: "8px", marginBottom: "16px" }}>
+          <h1 style={{ color: "#F1F5F9", fontSize: "26px", fontWeight: 800 }}>{totalGoals}</h1>
+          <span style={{ color: "#64748B", fontSize: "14px" }}>{t("goals_active_goals").toLowerCase()}</span>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="bg-white px-6 pt-4 pb-0 shadow-sm">
-        <div className="flex gap-6 border-b border-[#E2E8F0]">
+        {/* Tabs */}
+        <div
+          className="flex"
+          style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: "4px", gap: "4px" }}
+        >
           {(["development", "progress"] as Tab[]).map((tTab) => (
             <button
               key={tTab}
               onClick={() => setTab(tTab)}
-              className={`pb-3 text-sm font-medium transition-colors ${
-                tab === tTab ? "text-primary border-b-2 border-primary" : "text-text-secondary"
-              }`}
+              className="flex-1 font-semibold transition-all"
+              style={{
+                padding: "10px",
+                borderRadius: "12px",
+                fontSize: "14px",
+                ...(tab === tTab
+                  ? { background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white" }
+                  : { color: "#64748B" })
+              }}
             >
               {tTab === "development" ? t("goals_tab_dev") : t("goals_tab_prog")}
             </button>
@@ -125,36 +152,36 @@ export default function GoalsPage() {
       </div>
 
       {/* Conteúdo */}
-      <div className="flex-1 px-6 py-5 flex flex-col gap-3.5" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "16px", paddingBottom: "16px", gap: "12px" }}>
 
         {tab === "development" && (
           <>
-            <div className="flex justify-between items-center mb-1">
-              <p className="font-bold text-text-primary text-[15px]">{t("goals_dev")}</p>
-              <button
-                onClick={() => setShowDevForm(true)}
-                className="text-primary text-[13px] font-semibold"
-              >
-                {t("goals_add_goal")}
-              </button>
-            </div>
-
             {showDevForm && (
-              <div className="bg-white rounded-2xl p-4 border border-border flex flex-col gap-3">
-                <select value={devStudentId} onChange={(e) => setDevStudentId(e.target.value)}
-                  className="w-full text-[13px] text-text-primary outline-none border border-slate-200 rounded-xl px-3 py-2.5 bg-transparent">
-                  <option value="">{t("goals_select_student")}</option>
-                  {(students ?? []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              <div className="flex flex-col" style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "18px", padding: "16px", gap: "10px" }}>
+                <p style={{ color: "#A78BFA", fontSize: "13px", fontWeight: 700, marginBottom: "2px" }}>{t("goals_dev")}</p>
+                <select value={devStudentId} onChange={(e) => setDevStudentId(e.target.value)} style={fieldStyle}>
+                  <option value="" style={{ background: "#141728" }}>{t("goals_select_student")}</option>
+                  {(students ?? []).map((s) => (
+                    <option key={s.id} value={s.id} style={{ background: "#141728" }}>{s.name}</option>
+                  ))}
                 </select>
                 <textarea value={devDescription} onChange={(e) => setDevDescription(e.target.value)}
                   placeholder={t("goals_description")} rows={2}
-                  className="w-full text-[13px] text-text-primary placeholder-text-secondary resize-none outline-none border border-slate-200 rounded-xl px-3 py-2.5" />
-                <input type="date" value={devDeadline} onChange={(e) => setDevDeadline(e.target.value)}
-                  className="w-full text-[13px] text-text-primary outline-none border border-slate-200 rounded-xl px-3 py-2.5" />
-                <div className="flex gap-2.5">
-                  <button onClick={() => setShowDevForm(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-text-secondary text-[13px] font-medium">{t("goals_cancel")}</button>
+                  className="resize-none"
+                  style={fieldStyle}
+                />
+                <input type="date" value={devDeadline} onChange={(e) => setDevDeadline(e.target.value)} style={{ ...fieldStyle, colorScheme: "dark" }} />
+                <div className="flex" style={{ gap: "8px" }}>
+                  <button onClick={() => setShowDevForm(false)}
+                    className="flex-1 font-medium"
+                    style={{ border: "1px solid rgba(255,255,255,0.1)", color: "#64748B", borderRadius: "12px", padding: "11px", fontSize: "14px" }}
+                  >
+                    {t("goals_cancel")}
+                  </button>
                   <button onClick={handleAddDev} disabled={savingDev || !devDescription.trim() || !devStudentId}
-                    className="flex-1 py-2.5 rounded-xl bg-primary text-white text-[13px] font-semibold disabled:opacity-50">
+                    className="flex-1 font-semibold disabled:opacity-50"
+                    style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white", borderRadius: "12px", padding: "11px", fontSize: "14px" }}
+                  >
                     {savingDev ? t("goals_saving") : t("goals_save")}
                   </button>
                 </div>
@@ -166,7 +193,8 @@ export default function GoalsPage() {
               : (devGoals ?? []).map((goal: DevelopmentGoal) => (
                 <GoalCard
                   key={goal.id}
-                  icon="🎵" iconBg="bg-blue-50"
+                  icon="🎵"
+                  accentColor="#7C3AED"
                   title={goal.description}
                   subtitle={goal.student?.name ?? "—"}
                   daysLabel={daysLabel(goal.deadline)}
@@ -179,30 +207,32 @@ export default function GoalsPage() {
 
         {tab === "progress" && (
           <>
-            <div className="flex justify-between items-center mb-1">
-              <p className="font-bold text-text-primary text-[15px]">{t("goals_prog")}</p>
-              <button onClick={() => setShowProgForm(true)} className="text-primary text-[13px] font-semibold">{t("goals_add_goal")}</button>
-            </div>
-
             {showProgForm && (
-              <div className="bg-white rounded-2xl p-4 border border-border flex flex-col gap-3">
-                <select value={progStudentId} onChange={(e) => setProgStudentId(e.target.value)}
-                  className="w-full text-[13px] text-text-primary outline-none border border-slate-200 rounded-xl px-3 py-2.5 bg-transparent">
-                  <option value="">{t("goals_select_student")}</option>
-                  {(students ?? []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              <div className="flex flex-col" style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "18px", padding: "16px", gap: "10px" }}>
+                <p style={{ color: "#34D399", fontSize: "13px", fontWeight: 700, marginBottom: "2px" }}>{t("goals_prog")}</p>
+                <select value={progStudentId} onChange={(e) => setProgStudentId(e.target.value)} style={fieldStyle}>
+                  <option value="" style={{ background: "#141728" }}>{t("goals_select_student")}</option>
+                  {(students ?? []).map((s) => (
+                    <option key={s.id} value={s.id} style={{ background: "#141728" }}>{s.name}</option>
+                  ))}
                 </select>
                 <input value={progMethodName} onChange={(e) => setProgMethodName(e.target.value)}
-                  placeholder={t("goals_method")}
-                  className="w-full text-[13px] text-text-primary outline-none border border-slate-200 rounded-xl px-3 py-2.5" />
+                  placeholder={t("goals_method")} style={fieldStyle} />
                 <input type="number" value={progTarget} onChange={(e) => setProgTarget(e.target.value)}
-                  placeholder={t("goals_target_lesson")}
-                  className="w-full text-[13px] text-text-primary outline-none border border-slate-200 rounded-xl px-3 py-2.5" />
+                  placeholder={t("goals_target_lesson")} style={fieldStyle} />
                 <input type="date" value={progDeadline} onChange={(e) => setProgDeadline(e.target.value)}
-                  className="w-full text-[13px] text-text-primary outline-none border border-slate-200 rounded-xl px-3 py-2.5" />
-                <div className="flex gap-2.5">
-                  <button onClick={() => setShowProgForm(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-text-secondary text-[13px] font-medium">{t("goals_cancel")}</button>
+                  style={{ ...fieldStyle, colorScheme: "dark" }} />
+                <div className="flex" style={{ gap: "8px" }}>
+                  <button onClick={() => setShowProgForm(false)}
+                    className="flex-1 font-medium"
+                    style={{ border: "1px solid rgba(255,255,255,0.1)", color: "#64748B", borderRadius: "12px", padding: "11px", fontSize: "14px" }}
+                  >
+                    {t("goals_cancel")}
+                  </button>
                   <button onClick={handleAddProg} disabled={savingProg || !progMethodName.trim() || !progTarget || !progStudentId}
-                    className="flex-1 py-2.5 rounded-xl bg-primary text-white text-[13px] font-semibold disabled:opacity-50">
+                    className="flex-1 font-semibold disabled:opacity-50"
+                    style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white", borderRadius: "12px", padding: "11px", fontSize: "14px" }}
+                  >
                     {savingProg ? t("goals_saving") : t("goals_save")}
                   </button>
                 </div>
@@ -214,7 +244,8 @@ export default function GoalsPage() {
               : (progGoals ?? []).map((goal: ProgressGoal) => (
                 <GoalCard
                   key={goal.id}
-                  icon="📈" iconBg="bg-green-50"
+                  icon="📈"
+                  accentColor="#34D399"
                   title={`${goal.method?.name ?? "—"} — ${t("goals_reach_lesson")} ${goal.targetLessonNumber}`}
                   subtitle={goal.student?.name ?? "—"}
                   daysLabel={daysLabel(goal.deadline)}
@@ -225,34 +256,61 @@ export default function GoalsPage() {
           </>
         )}
       </div>
+
+      {/* FAB */}
+      <button
+        onClick={handleFab}
+        className="fixed flex items-center justify-center text-white active:scale-95 transition-transform z-40"
+        style={{
+          bottom: "96px",
+          right: "20px",
+          width: "56px",
+          height: "56px",
+          borderRadius: "9999px",
+          fontSize: "28px",
+          background: "linear-gradient(135deg, #7C3AED, #A855F7)",
+          boxShadow: "0 8px 24px rgba(124,58,237,0.5)",
+        }}
+      >
+        {(tab === "development" ? showDevForm : showProgForm) ? "×" : "+"}
+      </button>
     </div>
   );
 }
 
-function GoalCard({ icon, iconBg, title, subtitle, daysLabel, deadline, onDelete }: {
-  icon: string; iconBg: string; title: string; subtitle: string;
+function GoalCard({ icon, accentColor, title, subtitle, daysLabel, deadline, onDelete }: {
+  icon: string; accentColor: string; title: string; subtitle: string;
   daysLabel: string; deadline: string; onDelete: () => void;
 }) {
   const isOverdue = daysLabel.includes("Overdue") || daysLabel.includes("Atrasada");
   return (
-    <div className="bg-white rounded-2xl p-4 border border-border">
-      <div className="flex items-start gap-3">
-        <div className={`w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center text-2xl flex-shrink-0`}>
+    <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "18px", padding: "16px" }}>
+      <div className="flex items-start" style={{ gap: "14px" }}>
+        <div
+          className="flex items-center justify-center flex-shrink-0"
+          style={{ width: "44px", height: "44px", borderRadius: "12px", fontSize: "20px", background: `${accentColor}1A`, border: `1px solid ${accentColor}33` }}
+        >
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-[#1E293B] text-sm leading-snug">{title}</p>
-          <p className="text-[#64748B] text-xs mt-1">{subtitle}</p>
+          <p style={{ color: "#F1F5F9", fontSize: "14px", fontWeight: 500, lineHeight: "1.4" }}>{title}</p>
+          <p style={{ color: "#64748B", fontSize: "12px", marginTop: "4px" }}>{subtitle}</p>
           {deadline && (
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-[#64748B]">{deadline}</span>
-              <span className={`text-xs font-medium ${isOverdue ? "text-[#EF4444]" : "text-[#F59E0B]"}`}>
-                {daysLabel}
+            <div className="flex items-center" style={{ gap: "6px", marginTop: "8px" }}>
+              <span style={{ color: "#64748B", fontSize: "12px" }}>{deadline}</span>
+              <span style={{ color: isOverdue ? "#F87171" : "#F59E0B", fontSize: "12px", fontWeight: 600 }}>
+                · {daysLabel}
               </span>
             </div>
           )}
         </div>
-        <button onClick={onDelete} className="text-[#94A3B8] hover:text-[#EF4444] transition-colors text-lg leading-none flex-shrink-0 mt-0.5">×</button>
+        <button
+          onClick={onDelete}
+          className="transition-colors flex-shrink-0"
+          style={{ color: "#64748B", fontSize: "22px", lineHeight: 1 }}
+        >
+          ×
+        </button>
       </div>
     </div>
   );
@@ -260,9 +318,9 @@ function GoalCard({ icon, iconBg, title, subtitle, daysLabel, deadline, onDelete
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
-      <span className="text-4xl mb-3">🎯</span>
-      <p className="font-medium text-[14px]">{label}</p>
+    <div className="flex flex-col items-center justify-center" style={{ paddingTop: "48px", paddingBottom: "48px", gap: "12px" }}>
+      <span style={{ fontSize: "40px" }}>🎯</span>
+      <p style={{ color: "#64748B", fontSize: "14px", fontWeight: 500 }}>{label}</p>
     </div>
   );
 }

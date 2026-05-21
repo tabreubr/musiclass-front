@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
   fullWidth?: boolean;
   children: React.ReactNode;
 }
@@ -14,13 +14,17 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "flex items-center justify-center gap-2 font-semibold rounded-full py-3 px-6 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
+    "flex items-center justify-center gap-2 font-semibold rounded-2xl py-3.5 px-6 transition-all duration-200 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed text-sm";
 
   const variants = {
-    primary: "bg-primary text-white hover:bg-primary-dark shadow-sm",
+    primary:
+      "bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/25 hover:shadow-primary/40",
     secondary:
-      "bg-transparent border-2 border-primary text-primary hover:bg-surface-secondary",
-    ghost: "bg-transparent text-text-secondary hover:text-text-primary",
+      "bg-surface-secondary border border-border text-text-primary hover:bg-surface",
+    ghost:
+      "bg-transparent text-text-secondary hover:text-text-primary",
+    danger:
+      "bg-status-failed/10 border border-status-failed/30 text-status-failed hover:bg-status-failed/20",
   };
 
   return (

@@ -19,23 +19,33 @@ export function NotificationCard({
   onClick,
 }: NotificationCardProps) {
   return (
-    <div
+    <button
       onClick={onClick}
-      className="bg-white rounded-xl border border-border p-4 flex items-start gap-3 cursor-pointer active:bg-slate-50 transition-colors"
+      className="w-full text-left flex items-start active:scale-[0.99] transition-transform"
+      style={{
+        background: unread ? "rgba(124,58,237,0.06)" : "#141728",
+        border: unread ? "1px solid rgba(124,58,237,0.2)" : "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "16px",
+        padding: "13px 14px",
+        gap: "12px",
+      }}
     >
-      <div className="w-9 h-9 bg-surface-secondary rounded-lg flex items-center justify-center text-lg flex-shrink-0">
+      <div
+        className="flex items-center justify-center flex-shrink-0"
+        style={{ width: "36px", height: "36px", borderRadius: "10px", fontSize: "17px", background: "rgba(124,58,237,0.15)" }}
+      >
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start gap-2">
-          <p className={`text-sm text-text-primary leading-tight ${unread ? "font-semibold" : "font-medium"}`}>
+        <div className="flex justify-between items-start" style={{ gap: "8px" }}>
+          <p style={{ color: "#F1F5F9", fontSize: "13px", fontWeight: unread ? 600 : 500, lineHeight: "1.3" }}>
             {title}
           </p>
-          {unread && <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1" />}
+          {unread && <span className="flex-shrink-0" style={{ width: "7px", height: "7px", borderRadius: "9999px", background: "#A78BFA", marginTop: "3px" }} />}
         </div>
-        <p className="text-xs text-text-secondary mt-1 leading-relaxed">{description}</p>
-        <p className="text-xs text-text-secondary mt-1">{timeAgo}</p>
+        <p style={{ color: "#64748B", fontSize: "12px", marginTop: "3px", lineHeight: "1.4" }}>{description}</p>
+        <p style={{ color: "#475569", fontSize: "11px", marginTop: "3px" }}>{timeAgo}</p>
       </div>
-    </div>
+    </button>
   );
 }

@@ -8,6 +8,16 @@ import { instructorsService } from "@/services/instructorsService";
 import { useFetch } from "@/hooks/useFetch";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+const cardStyle: React.CSSProperties = {
+  background: "#141728",
+  border: "1px solid rgba(255,255,255,0.07)",
+};
+
+const selectStyle: React.CSSProperties = {
+  background: "transparent",
+  color: "#F1F5F9",
+};
+
 export default function NewClassPage() {
   const router = useRouter();
   const { t } = useLanguage();
@@ -51,65 +61,66 @@ export default function NewClassPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
 
       {/* Header */}
-      <div className="bg-white px-6 pt-14 pb-4 border-b border-border" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-        <button onClick={() => router.back()} className="flex items-center gap-1 text-text-secondary text-sm mb-2">
+      <div
+        style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "44px", paddingBottom: "14px" }}
+      >
+        <button onClick={() => router.back()} className="flex items-center gap-1.5" style={{ color: "#A78BFA", fontSize: "14px", marginBottom: "10px" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           {t("nav_classes")}
         </button>
-        <h1 className="text-lg font-bold text-text-primary">{t("classes_new_title")}</h1>
+        <h1 style={{ color: "#F1F5F9", fontSize: "22px", fontWeight: 800, letterSpacing: "-0.5px" }}>{t("classes_new_title")}</h1>
       </div>
 
       {/* Formulário */}
-      <div className="flex-1 px-6 py-5 flex flex-col gap-4" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "12px", paddingBottom: "8px", gap: "10px" }}>
 
-        {/* Aluno */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <label className="text-text-secondary text-xs font-semibold uppercase tracking-wide block mb-3">
+        <div style={{ ...cardStyle, borderRadius: "16px", padding: "13px 16px" }}>
+          <label style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: "8px" }}>
             {t("classes_student")}
           </label>
           <select
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
-            className="w-full text-sm text-text-primary outline-none bg-transparent"
+            className="w-full outline-none"
+            style={{ background: "transparent", color: "#F1F5F9", fontSize: "15px" }}
           >
-            <option value="">{t("classes_select_student")}</option>
+            <option value="" style={{ background: "#141728" }}>{t("classes_select_student")}</option>
             {(students ?? []).map((s) => (
-              <option key={s.id} value={s.id}>
+              <option key={s.id} value={s.id} style={{ background: "#141728" }}>
                 {s.name} — {s.instrument?.name ?? ""}
               </option>
             ))}
           </select>
-          {errors.student && <p className="text-status-failed text-xs mt-2">{errors.student}</p>}
+          {errors.student && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "6px" }}>{errors.student}</p>}
         </div>
 
-        {/* Instrutor */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <label className="text-text-secondary text-xs font-semibold uppercase tracking-wide block mb-3">
+        <div style={{ ...cardStyle, borderRadius: "16px", padding: "13px 16px" }}>
+          <label style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: "8px" }}>
             {t("classes_instructor")}
           </label>
           <select
             value={instructorId}
             onChange={(e) => setInstructorId(e.target.value)}
-            className="w-full text-sm text-text-primary outline-none bg-transparent"
+            className="w-full outline-none"
+            style={{ background: "transparent", color: "#F1F5F9", fontSize: "15px" }}
           >
-            <option value="">{t("classes_select_instructor")}</option>
+            <option value="" style={{ background: "#141728" }}>{t("classes_select_instructor")}</option>
             {(instructors ?? []).map((i) => (
-              <option key={i.id} value={i.id}>
+              <option key={i.id} value={i.id} style={{ background: "#141728" }}>
                 {i.name}
               </option>
             ))}
           </select>
-          {errors.instructor && <p className="text-status-failed text-xs mt-2">{errors.instructor}</p>}
+          {errors.instructor && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "6px" }}>{errors.instructor}</p>}
         </div>
 
-        {/* Data e hora */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <label className="text-text-secondary text-xs font-semibold uppercase tracking-wide block mb-3">
+        <div style={{ ...cardStyle, borderRadius: "16px", padding: "13px 16px" }}>
+          <label style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: "8px" }}>
             {t("classes_date")}
           </label>
           <input
@@ -117,38 +128,42 @@ export default function NewClassPage() {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             min={new Date().toISOString().slice(0, 16)}
-            className="w-full text-sm text-text-primary outline-none bg-transparent"
+            className="w-full outline-none"
+            style={{ background: "transparent", color: "#F1F5F9", fontSize: "15px", colorScheme: "dark" }}
           />
-          {errors.date && <p className="text-status-failed text-xs mt-2">{errors.date}</p>}
+          {errors.date && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "6px" }}>{errors.date}</p>}
         </div>
 
-        {/* Observações */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <label className="text-text-secondary text-xs font-semibold uppercase tracking-wide block mb-3">
-            {t("classes_observations").replace("...", "")} <span className="normal-case font-normal">{t("classes_obs_optional")}</span>
+        <div style={{ ...cardStyle, borderRadius: "16px", padding: "13px 16px" }}>
+          <label style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: "8px" }}>
+            {t("classes_observations").replace("...", "")} <span style={{ textTransform: "none", fontWeight: 400, color: "#64748B" }}>{t("classes_obs_optional")}</span>
           </label>
           <textarea
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
             placeholder={t("classes_obs_placeholder")}
-            rows={3}
-            className="w-full text-sm text-text-primary placeholder-text-secondary resize-none outline-none"
+            rows={2}
+            className="w-full resize-none outline-none"
+            style={{ background: "transparent", color: "#F1F5F9", fontSize: "14px", lineHeight: "1.5" }}
           />
         </div>
 
-        {/* Aviso */}
-        <div className="bg-amber-50 rounded-2xl px-4 py-3 flex items-start gap-3">
-          <span className="text-lg">💡</span>
-          <p className="text-amber-700 text-xs leading-relaxed">
+        {/* Dica */}
+        <div
+          className="flex items-start"
+          style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "14px", padding: "11px 14px", gap: "10px" }}
+        >
+          <span style={{ fontSize: "16px" }}>💡</span>
+          <p style={{ color: "#FBBF24", fontSize: "12px", lineHeight: "1.4" }}>
             {t("classes_result_tip")}
           </p>
         </div>
 
-        {/* Botão */}
         <button
           onClick={handleSubmit}
           disabled={saving}
-          className="w-full py-4 bg-primary text-white font-semibold rounded-2xl active:scale-95 transition-transform disabled:opacity-60"
+          className="w-full font-semibold active:scale-95 transition-transform disabled:opacity-60"
+          style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white", borderRadius: "16px", padding: "15px", fontSize: "15px", boxShadow: "0 8px 24px rgba(124,58,237,0.3)" }}
         >
           {saving ? t("classes_creating") : t("classes_create")}
         </button>

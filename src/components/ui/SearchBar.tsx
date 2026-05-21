@@ -8,9 +8,9 @@ interface SearchBarProps {
 
 export function SearchBar({ placeholder = "Search...", value, onChange }: SearchBarProps) {
   return (
-    <div className="relative w-full">
+    <div style={{ position: "relative", width: "100%" }}>
       <svg
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary"
+        style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)" }}
         width="18"
         height="18"
         viewBox="0 0 24 24"
@@ -24,10 +24,18 @@ export function SearchBar({ placeholder = "Search...", value, onChange }: Search
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-white border border-border rounded-2xl py-3 pl-11 pr-4
-          text-text-primary placeholder-text-secondary text-sm
-          focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
-          transition-all duration-200"
+        className="w-full focus:outline-none transition-all duration-200"
+        style={{
+          background: "rgba(255,255,255,0.06)",
+          border: "1px solid rgba(255,255,255,0.09)",
+          borderRadius: "16px",
+          paddingTop: "14px",
+          paddingBottom: "14px",
+          paddingLeft: "48px",
+          paddingRight: "16px",
+          fontSize: "14px",
+          color: "#F1F5F9",
+        }}
       />
     </div>
   );

@@ -21,17 +21,23 @@ export default function StudentsPage() {
   );
 
   return (
-    <div className="bg-[#F8FAFC]">
+    <div style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
 
       {/* Header */}
-      <div className="bg-white px-6 pt-14 pb-5 shadow-sm" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-        <div className="flex justify-between items-center mb-5">
-          <h1 className="text-xl font-semibold text-[#1E3A5F]">{t("students_title")}</h1>
-          <button className="w-9 h-9 bg-surface-secondary rounded-xl flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M3 6H21M6 12H18M9 18H15" stroke="#64748B" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
+      <div
+        style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "56px", paddingBottom: "20px" }}
+      >
+        <div className="flex justify-between items-center" style={{ marginBottom: "20px" }}>
+          <div>
+            <p style={{ color: "#A78BFA", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "4px" }}>
+              {t("students_title")}
+            </p>
+            {!loading && !error && (
+              <h1 style={{ color: "#F1F5F9", fontSize: "26px", fontWeight: 800, letterSpacing: "-0.5px" }}>
+                {filtered.length} {filtered.length !== 1 ? t("students_active_plural") : t("students_active")}
+              </h1>
+            )}
+          </div>
         </div>
         <SearchBar
           placeholder={t("students_search")}
@@ -40,14 +46,8 @@ export default function StudentsPage() {
         />
       </div>
 
-      {/* Contador + Lista */}
-      <div className="px-6 py-4 flex flex-col gap-3.5" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-        {!loading && !error && (
-          <p className="text-sm text-text-secondary font-medium">
-            {filtered.length} {filtered.length !== 1 ? t("students_active_plural") : t("students_active")}
-          </p>
-        )}
-
+      {/* Lista */}
+      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "20px", paddingBottom: "20px", gap: "12px" }}>
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 text-text-secondary">
             <span className="text-4xl mb-3 animate-spin">⏳</span>
@@ -55,10 +55,9 @@ export default function StudentsPage() {
           </div>
         )}
         {error && (
-          <div className="flex flex-col items-center justify-center py-16 text-red-500">
+          <div className="flex flex-col items-center justify-center py-16">
             <span className="text-4xl mb-3">⚠️</span>
-            <p className="font-medium">{t("students_error")}</p>
-            <p className="text-sm text-text-secondary mt-1">{error}</p>
+            <p className="font-medium text-red-400">{t("students_error")}</p>
           </div>
         )}
         {!loading && !error && filtered.length === 0 && (
@@ -80,7 +79,11 @@ export default function StudentsPage() {
       {/* FAB */}
       <button
         onClick={() => router.push("/students/new")}
-        className="fixed bottom-24 right-5 w-14 h-14 bg-primary rounded-full shadow-lg flex items-center justify-center text-white text-3xl active:scale-95 transition-transform z-40"
+        className="fixed bottom-24 right-5 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl active:scale-95 transition-transform z-40"
+        style={{
+          background: "linear-gradient(135deg, #7C3AED, #A855F7)",
+          boxShadow: "0 8px 24px rgba(124,58,237,0.5)",
+        }}
       >
         +
       </button>

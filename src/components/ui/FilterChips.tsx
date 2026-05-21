@@ -12,21 +12,27 @@ export function FilterChips<T extends string>({
   onChange,
 }: FilterChipsProps<T>) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+    <div className="flex overflow-x-auto scrollbar-none" style={{ gap: "8px", paddingBottom: "4px" }}>
       {options.map((option) => {
         const isActive = option.value === selected;
         return (
           <button
             key={option.value}
             onClick={() => onChange(option.value)}
-            className={`
-              flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold
-              transition-all duration-200
-              ${isActive
-                ? "bg-primary text-white shadow-sm"
-                : "bg-white text-text-secondary border border-border hover:border-primary hover:text-primary"
-              }
-            `}
+            className="flex-shrink-0 transition-all duration-200"
+            style={{
+              paddingLeft: "14px",
+              paddingRight: "14px",
+              paddingTop: "8px",
+              paddingBottom: "8px",
+              borderRadius: "9999px",
+              fontSize: "13px",
+              fontWeight: 600,
+              ...(isActive
+                ? { background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white" }
+                : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.09)", color: "#64748B" }
+              ),
+            }}
           >
             {option.label}
           </button>

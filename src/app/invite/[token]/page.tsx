@@ -25,7 +25,6 @@ export default function InvitePage() {
     e.preventDefault();
     setError(null);
 
-    // Validação local antes de chamar a API
     if (!email.trim() || !password.trim()) {
       setError(t("invite_err_fields"));
       return;
@@ -36,8 +35,6 @@ export default function InvitePage() {
       await inviteService.register(token, { email, password });
       setPageState("success");
     } catch (err: unknown) {
-      // 410 Gone = token expirado ou já usado
-      // 404 = token não encontrado / inválido
       const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 410) {
         setError(t("invite_err_expired"));
@@ -52,51 +49,47 @@ export default function InvitePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-primary to-primary-dark px-6">
-
+    <div
+      className="min-h-screen flex flex-col justify-between px-6 py-12"
+      style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)" }}
+    >
       {/* Logo */}
-      <div className="flex flex-col items-center gap-4 mb-10">
-        <div className="bg-white rounded-3xl p-5 shadow-lg">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <div className="flex flex-col items-center gap-5 mt-8">
+        <div
+          className="w-16 h-16 rounded-3xl flex items-center justify-center"
+          style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)", boxShadow: "0 8px 32px rgba(124,58,237,0.5)" }}
+        >
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
             <path
               d="M36 8V28C36 32.418 30.627 36 24 36C17.373 36 12 32.418 12 28C12 23.582 17.373 20 24 20C26.09 20 28.05 20.45 29.75 21.23V8H36Z"
-              fill="#2563EB"
-              stroke="#2563EB"
-              strokeWidth="1"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              fill="white"
             />
-            <circle cx="24" cy="28" r="6" fill="#60A5FA" />
+            <circle cx="24" cy="28" r="6" fill="rgba(255,255,255,0.4)" />
           </svg>
         </div>
-
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white">Musiclass</h1>
+          <p className="text-purple-300 text-sm mt-1">Área do Aluno</p>
         </div>
       </div>
 
-      {/* Estado: sucesso */}
+      {/* Conteúdo */}
       {pageState === "success" ? (
-        <div className="w-full flex flex-col items-center gap-6 text-center">
+        <div className="flex flex-col items-center gap-6 text-center">
           <div className="text-6xl">🎉</div>
           <div>
             <h2 className="text-2xl font-bold text-white">{t("invite_success_title")}</h2>
-            <p className="text-primary-light text-sm mt-2">{t("invite_success_subtitle")}</p>
+            <p className="text-purple-300 text-sm mt-2">{t("invite_success_subtitle")}</p>
           </div>
-          <Button
-            fullWidth
-            onClick={() => router.push("/login")}
-            className="bg-white text-primary font-semibold hover:bg-primary-light"
-          >
+          <Button fullWidth onClick={() => router.push("/login")}>
             {t("invite_success_btn")}
           </Button>
         </div>
       ) : (
-        /* Estado: formulário de registro */
-        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="text-center mb-2">
             <h2 className="text-xl font-bold text-white">{t("invite_title")}</h2>
-            <p className="text-primary-light text-sm mt-1">{t("invite_subtitle")}</p>
+            <p className="text-purple-300 text-sm mt-1">{t("invite_subtitle")}</p>
           </div>
 
           <Input
@@ -117,25 +110,24 @@ export default function InvitePage() {
             autoComplete="new-password"
           />
 
-          {/* Mensagem de erro */}
           {error && (
-            <p className="text-red-300 text-sm text-center -mt-1">{error}</p>
+            <p className="text-red-400 text-sm text-center -mt-1">{error}</p>
           )}
 
-          <Button
-            type="submit"
-            fullWidth
-            disabled={loading}
-            className="mt-2 bg-primary-dark hover:bg-primary"
-          >
+          <Button type="submit" fullWidth disabled={loading} className="mt-2">
             {loading ? t("invite_submitting") : t("invite_submit")}
           </Button>
         </form>
       )}
 
-      {/* Decoração musical */}
-      <div className="absolute top-8 right-8 opacity-20 text-white text-4xl select-none">♩</div>
-      <div className="absolute bottom-16 left-8 opacity-20 text-white text-3xl select-none">♪</div>
+      {/* Footer */}
+      <div className="flex justify-center">
+        <p className="text-purple-400 text-xs">Sua jornada musical começa aqui</p>
+      </div>
+
+      {/* Decoração */}
+      <div className="absolute top-10 right-8 opacity-10 text-white text-5xl select-none pointer-events-none">♩</div>
+      <div className="absolute bottom-20 left-6 opacity-10 text-white text-4xl select-none pointer-events-none">♪</div>
     </div>
   );
 }

@@ -46,7 +46,7 @@ export default function StudentProfilePage() {
     if (date.toDateString() === today.toDateString()) return t("date_today");
     if (date.toDateString() === yesterday.toDateString()) return t("date_yesterday");
     if (date.toDateString() === tomorrow.toDateString()) return t("date_tomorrow");
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString("pt-BR", { month: "short", day: "numeric", year: "numeric" });
   }
 
   if (loading) {
@@ -60,10 +60,10 @@ export default function StudentProfilePage() {
 
   if (error || !student) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-red-500 gap-3">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-3">
         <span className="text-4xl">⚠️</span>
-        <p className="font-medium">{error ?? t("students_not_found")}</p>
-        <button onClick={() => router.back()} className="text-primary text-sm mt-2">{t("students_go_back")}</button>
+        <p className="font-medium text-red-400">{error ?? t("students_not_found")}</p>
+        <button onClick={() => router.back()} className="text-primary-light text-sm mt-2">{t("students_go_back")}</button>
       </div>
     );
   }
@@ -95,104 +95,132 @@ export default function StudentProfilePage() {
   const passed = classes.filter((c) => c.passed === true).length;
   const failed = classes.filter((c) => c.passed === false).length;
   const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+  const initials = student.name?.[0]?.toUpperCase() ?? "?";
 
   const sorted = [...classes].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
 
       {/* Header */}
-      <div className="bg-white px-6 pt-14 pb-4 border-b border-border" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-        <button onClick={() => router.back()} className="flex items-center gap-1 text-text-secondary text-sm mb-2">
+      <div style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "44px", paddingBottom: "16px" }}>
+        <button onClick={() => router.back()} className="flex items-center gap-1.5" style={{ color: "#A78BFA", fontSize: "14px", marginBottom: "12px" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           {t("nav_students")}
         </button>
-        <h1 className="text-lg font-bold text-text-primary">{student.name}</h1>
-        <p className="text-sm text-text-secondary mt-0.5">{instrumentName} · {student.instructor?.name ?? "—"}</p>
+
+        <div className="flex items-center" style={{ gap: "14px" }}>
+          <div
+            className="flex items-center justify-center font-bold text-white flex-shrink-0"
+            style={{ width: "52px", height: "52px", borderRadius: "14px", fontSize: "20px", background: "linear-gradient(135deg, #7C3AED, #A855F7)", boxShadow: "0 6px 18px rgba(124,58,237,0.4)" }}
+          >
+            {initials}
+          </div>
+          <div>
+            <h1 style={{ color: "#F1F5F9", fontSize: "20px", fontWeight: 700 }}>{student.name}</h1>
+            <p style={{ color: "#A78BFA", fontSize: "13px", marginTop: "2px" }}>{emoji} {instrumentName}</p>
+          </div>
+        </div>
+
         {total > 0 && (
-          <div className="flex items-center gap-2 mt-3">
-            <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-              <div className="h-full bg-green-500 rounded-full" style={{ width: `${passRate}%` }} />
+          <div className="flex items-center" style={{ gap: "10px", marginTop: "14px" }}>
+            <div className="flex-1" style={{ height: "6px", borderRadius: "9999px", overflow: "hidden", background: "rgba(255,255,255,0.1)" }}>
+              <div style={{ height: "100%", borderRadius: "9999px", width: `${passRate}%`, background: "#34D399" }} />
             </div>
-            <span className="text-xs font-semibold text-text-secondary">{passRate}%</span>
+            <span style={{ color: "#64748B", fontSize: "12px", fontWeight: 600 }}>{passRate}% aprovação</span>
           </div>
         )}
       </div>
 
-      {/* Conteúdo */}
-      <div className="flex-1 px-6 py-5 flex flex-col gap-4" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "14px", paddingBottom: "8px", gap: "10px" }}>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <StatCard value={total} label={t("students_total_classes")} color="text-primary" />
-          <StatCard value={passed} label={t("students_passed")} color="text-status-passed" />
-          <StatCard value={failed} label={t("students_failed")} color="text-status-failed" />
+        <div className="grid grid-cols-3" style={{ gap: "8px" }}>
+          <StatCard value={total} label={t("students_total_classes")} color="#A78BFA" />
+          <StatCard value={passed} label={t("students_passed")} color="#34D399" />
+          <StatCard value={failed} label={t("students_failed")} color="#F87171" />
         </div>
 
         {/* Convite */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">
+        <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "14px 16px" }}>
+          <p style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px" }}>
             Convite de Acesso
           </p>
           {!invite ? (
             <button
               onClick={handleGenerateInvite}
               disabled={generatingInvite}
-              className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors disabled:opacity-60"
+              className="w-full font-semibold disabled:opacity-60 transition-all"
+              style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white", borderRadius: "12px", padding: "13px", fontSize: "14px" }}
             >
               {generatingInvite ? "Gerando..." : "🔗 Gerar Link de Convite"}
             </button>
           ) : (
-            <div className="flex flex-col gap-2">
-              <p className="text-xs text-text-secondary break-all bg-gray-50 rounded-xl px-3 py-2">
+            <div className="flex flex-col" style={{ gap: "8px" }}>
+              <p
+                className="break-all"
+                style={{ color: "#64748B", fontSize: "12px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "8px 12px" }}
+              >
                 {invite.inviteLink}
               </p>
               <button
                 onClick={handleCopyLink}
-                className="w-full py-2.5 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition-colors"
+                className="w-full font-semibold transition-all"
+                style={{
+                  borderRadius: "12px", padding: "13px", fontSize: "14px",
+                  ...(copied
+                    ? { background: "rgba(52,211,153,0.15)", color: "#34D399", border: "1px solid rgba(52,211,153,0.3)" }
+                    : { background: "linear-gradient(135deg, #7C3AED, #A855F7)", color: "white" })
+                }}
               >
                 {copied ? "✓ Copiado!" : "Copiar Link"}
               </button>
-              <p className="text-xs text-text-secondary text-center">
-                Expira em 7 dias
-              </p>
+              <p style={{ color: "#64748B", fontSize: "12px", textAlign: "center" }}>Expira em 7 dias</p>
             </div>
           )}
         </div>
 
         {/* Histórico */}
-        <div className="bg-white rounded-2xl p-4 border border-border">
-          <p className="text-text-secondary text-xs font-semibold uppercase tracking-wide mb-3">
-            {t("students_class_history")}
-          </p>
+        <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", overflow: "hidden" }}>
+          <div style={{ padding: "14px 16px 10px" }}>
+            <p style={{ color: "#64748B", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              {t("students_class_history")}
+            </p>
+          </div>
 
           {sorted.length === 0 ? (
-            <div className="flex flex-col items-center py-8 text-text-secondary gap-2">
-              <span className="text-3xl">🎵</span>
-              <p className="text-sm">{t("students_no_classes")}</p>
+            <div className="flex flex-col items-center" style={{ paddingTop: "28px", paddingBottom: "28px", gap: "8px" }}>
+              <span style={{ fontSize: "28px" }}>🎵</span>
+              <p style={{ color: "#64748B", fontSize: "14px" }}>{t("students_no_classes")}</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {sorted.map((c) => (
+            <div>
+              {sorted.map((c, i) => (
                 <button
                   key={c.id}
                   onClick={() => router.push(`/classes/${c.id}`)}
-                  className="flex items-center gap-3 w-full text-left"
+                  className="flex items-center w-full text-left hover:bg-white/5 active:bg-white/10 transition-colors"
+                  style={{
+                    gap: "12px", padding: "12px 16px",
+                    ...(i < sorted.length - 1 ? { borderBottom: "1px solid rgba(255,255,255,0.05)" } : {})
+                  }}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-text-primary text-sm font-medium">
+                    <p style={{ color: "#F1F5F9", fontSize: "14px", fontWeight: 500 }}>
                       {c.lessons && c.lessons.length > 0
                         ? c.lessons.map((l) => l.methodName?.name ?? "—").join(", ")
                         : t("students_no_lessons")}
                     </p>
-                    <p className="text-text-secondary text-xs mt-0.5">{formatDate(c.date)}</p>
+                    <p style={{ color: "#64748B", fontSize: "12px", marginTop: "2px" }}>{formatDate(c.date)}</p>
                   </div>
                   <Badge status={getStatus(c.passed)} />
-                  <span className="text-text-secondary">›</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 6L15 12L9 18" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
               ))}
             </div>
@@ -205,9 +233,12 @@ export default function StudentProfilePage() {
 
 function StatCard({ value, label, color }: { value: number; label: string; color: string }) {
   return (
-    <div className="bg-white rounded-2xl p-3 border border-border text-center">
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
-      <p className="text-text-secondary text-xs mt-0.5">{label}</p>
+    <div
+      className="flex flex-col text-center"
+      style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "14px 8px", gap: "6px" }}
+    >
+      <p style={{ fontSize: "26px", fontWeight: 800, color }}>{value}</p>
+      <p style={{ color: "#64748B", fontSize: "11px", fontWeight: 500, lineHeight: "1.3" }}>{label}</p>
     </div>
   );
 }
