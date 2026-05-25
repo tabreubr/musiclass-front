@@ -43,17 +43,22 @@ export default function StudentClassDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center" style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
-        <span className="text-4xl animate-spin">⏳</span>
+        <span style={{ fontSize: "36px" }} className="animate-spin">⏳</span>
       </div>
     );
   }
 
   if (error || !classItem) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3" style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
-        <span className="text-4xl">⚠️</span>
-        <p className="text-red-400 text-sm">Aula não encontrada</p>
-        <button onClick={() => router.back()} className="text-primary-light text-sm">← Voltar</button>
+      <div className="flex flex-col items-center justify-center" style={{ background: "#0A0D1A", minHeight: "100dvh", gap: "12px" }}>
+        <span style={{ fontSize: "40px" }}>⚠️</span>
+        <p style={{ color: "#F87171", fontSize: "14px" }}>Aula não encontrada</p>
+        <button
+          onClick={() => router.back()}
+          style={{ color: "#A78BFA", fontSize: "14px" }}
+        >
+          ← Voltar
+        </button>
       </div>
     );
   }
@@ -64,84 +69,112 @@ export default function StudentClassDetailPage() {
     <div style={{ background: "#0A0D1A", minHeight: "100dvh", paddingBottom: "40px" }}>
 
       {/* Header */}
-      <div
-        style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "56px", paddingBottom: "24px" }}
-      >
+      <div style={{
+        background: "linear-gradient(160deg, #1A0F3C 0%, #120A2E 55%, #0A0D1A 100%)",
+        paddingLeft: "24px",
+        paddingRight: "24px",
+        paddingTop: "52px",
+        paddingBottom: "20px",
+      }}>
+        {/* Voltar */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-primary-light text-sm mb-5"
+          className="flex items-center"
+          style={{ color: "#A78BFA", fontSize: "14px", gap: "6px", marginBottom: "20px" }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="#A78BFA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           Minhas Aulas
         </button>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-lg font-bold text-text-primary capitalize">{formatDate(classItem.date)}</p>
+
+        {/* Data + instrutor + badge */}
+        <div className="flex items-start justify-between" style={{ gap: "12px" }}>
+          <div style={{ flex: 1 }}>
+            <p style={{ color: "#F1F5F9", fontSize: "18px", fontWeight: 700, lineHeight: "1.35", textTransform: "capitalize" }}>
+              {formatDate(classItem.date)}
+            </p>
             {classItem.instructor && (
-              <p className="text-sm text-primary-light mt-1">Instrutor: {classItem.instructor.name}</p>
+              <p style={{ color: "#A78BFA", fontSize: "13px", marginTop: "6px" }}>
+                Instrutor: {classItem.instructor.name}
+              </p>
             )}
           </div>
           <Badge status={getStatus(classItem.passed)} />
         </div>
       </div>
 
-      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", marginTop: "20px", gap: "16px" }}>
+      {/* Conteúdo */}
+      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "20px", gap: "14px" }}>
 
         {/* Observações */}
         {classItem.observations && (
-          <div
-            className="rounded-2xl p-4"
-            style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)" }}
-          >
-            <p className="text-text-secondary text-xs font-semibold uppercase tracking-widest mb-2">Observações</p>
-            <p className="text-sm text-text-primary italic">{classItem.observations}</p>
+          <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "16px" }}>
+            <p style={{ color: "#475569", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>
+              Observações
+            </p>
+            <p style={{ color: "#F1F5F9", fontSize: "14px", lineHeight: "1.6", fontStyle: "italic" }}>
+              {classItem.observations}
+            </p>
           </div>
         )}
 
         {/* Lições */}
-        <div
-          className="rounded-2xl p-4"
-          style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)" }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-text-secondary text-xs font-semibold uppercase tracking-widest">Lições</p>
+        <div style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "16px" }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: "14px" }}>
+            <p style={{ color: "#475569", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              Lições
+            </p>
             {classItem.lessons.length > 0 && (
-              <p className="text-xs text-primary-light font-semibold">
+              <p style={{ color: "#A78BFA", fontSize: "12px", fontWeight: 600 }}>
                 {completedLessons}/{classItem.lessons.length} concluídas
               </p>
             )}
           </div>
 
           {classItem.lessons.length === 0 ? (
-            <div className="flex flex-col items-center py-6 gap-2 text-text-secondary">
-              <span className="text-3xl">🎵</span>
-              <p className="text-sm">Nenhuma lição registrada</p>
+            <div className="flex flex-col items-center" style={{ paddingTop: "24px", paddingBottom: "24px", gap: "8px" }}>
+              <span style={{ fontSize: "32px" }}>🎵</span>
+              <p style={{ color: "#64748B", fontSize: "14px" }}>Nenhuma lição registrada</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col" style={{ gap: "12px" }}>
               {classItem.lessons.map((lesson) => (
-                <div key={lesson.id} className="flex items-center gap-3">
+                <div key={lesson.id} className="flex items-center" style={{ gap: "12px" }}>
+                  {/* Ícone de status */}
                   <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={lesson.completed
-                      ? { background: "rgba(52,211,153,0.15)", border: "1px solid rgba(52,211,153,0.3)" }
-                      : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }
-                    }
+                    className="flex items-center justify-center flex-shrink-0"
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "50%",
+                      ...(lesson.completed
+                        ? { background: "rgba(52,211,153,0.15)", border: "1px solid rgba(52,211,153,0.3)" }
+                        : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }
+                      ),
+                    }}
                   >
-                    {lesson.completed
-                      ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      : <span className="w-1.5 h-1.5 rounded-full bg-text-secondary inline-block" />
-                    }
+                    {lesson.completed ? (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 13L9 17L19 7" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : (
+                      <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#475569" }} />
+                    )}
                   </div>
 
+                  {/* Nome + detalhes */}
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${lesson.completed ? "text-text-secondary line-through" : "text-text-primary"}`}>
+                    <p style={{
+                      color: lesson.completed ? "#64748B" : "#F1F5F9",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      textDecoration: lesson.completed ? "line-through" : "none",
+                    }}>
                       {lesson.methodName?.name ?? "—"}
                     </p>
                     {(lesson.lessonNumber || lesson.page) && (
-                      <p className="text-xs text-text-secondary">
+                      <p style={{ color: "#475569", fontSize: "12px", marginTop: "2px" }}>
                         {lesson.lessonNumber ? `Lição ${lesson.lessonNumber}` : ""}
                         {lesson.lessonNumber && lesson.page ? " · " : ""}
                         {lesson.page ? `Pág. ${lesson.page}` : ""}
@@ -149,12 +182,19 @@ export default function StudentClassDetailPage() {
                     )}
                   </div>
 
+                  {/* Badge */}
                   <span
-                    className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={lesson.completed
-                      ? { color: "#34D399", background: "rgba(52,211,153,0.1)" }
-                      : { color: "#64748B", background: "rgba(255,255,255,0.05)" }
-                    }
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      padding: "3px 10px",
+                      borderRadius: "9999px",
+                      flexShrink: 0,
+                      ...(lesson.completed
+                        ? { color: "#34D399", background: "rgba(52,211,153,0.1)" }
+                        : { color: "#64748B", background: "rgba(255,255,255,0.05)" }
+                      ),
+                    }}
                   >
                     {lesson.completed ? "Feito" : "Pendente"}
                   </span>

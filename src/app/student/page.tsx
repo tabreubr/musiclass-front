@@ -2,7 +2,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { ClassItem } from "@/types";
 import { useFetch } from "@/hooks/useFetch";
 import { studentAreaService } from "@/services/studentAreaService";
@@ -16,8 +15,7 @@ function getStatus(passed: boolean | null): ClassStatus {
 }
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("pt-BR", {
+  return new Date(dateStr).toLocaleDateString("pt-BR", {
     weekday: "short",
     day: "2-digit",
     month: "short",
@@ -30,12 +28,17 @@ function ClassCard({ c, onClick }: { c: ClassItem; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-2xl p-4 active:scale-[0.98] transition-transform"
-      style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)" }}
+      className="w-full text-left active:scale-[0.98] transition-transform"
+      style={{
+        background: "#141728",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "16px",
+        padding: "14px 16px",
+      }}
     >
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-semibold text-text-primary">{formatDate(c.date)}</p>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between" style={{ marginBottom: "6px" }}>
+        <p style={{ color: "#F1F5F9", fontSize: "14px", fontWeight: 600 }}>{formatDate(c.date)}</p>
+        <div className="flex items-center" style={{ gap: "8px" }}>
           <Badge status={getStatus(c.passed)} />
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M9 6L15 12L9 18" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -43,13 +46,10 @@ function ClassCard({ c, onClick }: { c: ClassItem; onClick: () => void }) {
         </div>
       </div>
       {c.instructor && (
-        <p className="text-xs text-text-secondary">Instrutor: {c.instructor.name}</p>
-      )}
-      {c.observations && (
-        <p className="text-xs text-text-secondary mt-1 italic line-clamp-2">{c.observations}</p>
+        <p style={{ color: "#64748B", fontSize: "12px" }}>Instrutor: {c.instructor.name}</p>
       )}
       {c.lessons.length > 0 && (
-        <p className="text-xs text-primary-light mt-2 font-medium">
+        <p style={{ color: "#A78BFA", fontSize: "12px", fontWeight: 600, marginTop: "6px" }}>
           {c.lessons.filter((l) => l.completed).length}/{c.lessons.length} lições concluídas
         </p>
       )}
@@ -57,110 +57,123 @@ function ClassCard({ c, onClick }: { c: ClassItem; onClick: () => void }) {
   );
 }
 
-export default function StudentPage() {
-  const { user, isLoading, logout } = useAuth();
+export default function StudentDashboardPage() {
+  const { user } = useAuth();
   const router = useRouter();
 
-  const { data: classes, loading: loadingClasses } = useFetch(
-    () => studentAreaService.getMyClasses()
-  );
-
-  useEffect(() => {
-    if (!isLoading && (!user || user.role !== "STUDENT")) {
-      router.push("/login");
-    }
-  }, [user, isLoading, router]);
-
-  if (isLoading || !user) {
-    return (
-      <div className="flex items-center justify-center" style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
-        <span className="text-4xl animate-spin">⏳</span>
-      </div>
-    );
-  }
+  const { data: classes, loading } = useFetch(() => studentAreaService.getMyClasses());
 
   const now = new Date();
-  const upcoming = (classes ?? []).filter((c) => new Date(c.date) >= now);
+  const upcoming = (classes ?? [])
+    .filter((c) => new Date(c.date) >= now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const past = (classes ?? []).filter((c) => new Date(c.date) < now);
-  const passedCount = (classes ?? []).filter((c) => c.passed === true).length;
+  const passedCount = past.filter((c) => c.passed === true).length;
+  const nextClass = upcoming[0] ?? null;
+  const firstName = user?.name?.split(" ")[0] ?? "—";
 
   return (
-    <div style={{ background: "#0A0D1A", minHeight: "100dvh", paddingBottom: "40px" }}>
+    <div style={{ background: "#0A0D1A", minHeight: "100dvh" }}>
 
       {/* Header */}
-      <div
-        style={{ background: "linear-gradient(160deg, #1A0F3C 0%, #0A0D1A 100%)", paddingLeft: "24px", paddingRight: "24px", paddingTop: "56px", paddingBottom: "24px" }}
-      >
-        <div className="flex items-center justify-between mb-6">
+      <div style={{
+        background: "linear-gradient(160deg, #1A0F3C 0%, #120A2E 55%, #0A0D1A 100%)",
+        paddingLeft: "24px",
+        paddingRight: "24px",
+        paddingTop: "44px",
+        paddingBottom: "16px",
+      }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: "16px" }}>
           <div>
-            <p className="text-primary-light text-sm font-medium">Bem-vindo de volta 👋</p>
-            <h1 className="text-2xl font-bold text-text-primary mt-0.5">{user.name}</h1>
+            <p style={{ color: "#A78BFA", fontSize: "13px", fontWeight: 600 }}>Bem-vindo de volta 👋</p>
+            <h1 style={{ color: "#F1F5F9", fontSize: "26px", fontWeight: 800, marginTop: "2px", letterSpacing: "-0.5px" }}>
+              {firstName}
+            </h1>
           </div>
-          <button
-            onClick={logout}
-            className="px-4 py-2 rounded-xl text-sm font-semibold text-primary-light transition-all"
-            style={{ background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.2)" }}
-          >
-            Sair
-          </button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { value: classes?.length ?? 0, label: "Total" },
-            { value: upcoming.length, label: "Próximas" },
-            { value: passedCount, label: "Aprovadas" },
-          ].map(({ value, label }) => (
-            <div
-              key={label}
-              className="rounded-2xl p-3 text-center"
-              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.08)" }}
-            >
-              <p className="text-2xl font-bold text-white">{value}</p>
-              <p className="text-primary-light text-xs mt-1">{label}</p>
+        {/* Próxima aula em destaque */}
+        {loading ? null : nextClass ? (
+          <button
+            onClick={() => router.push(`/student/classes/${nextClass.id}`)}
+            className="w-full text-left active:scale-[0.98] transition-transform"
+            style={{
+              background: "linear-gradient(135deg, #6D28D9 0%, #7C3AED 45%, #9333EA 80%, #A855F7 100%)",
+              boxShadow: "0 12px 40px rgba(109,40,217,0.45)",
+              borderRadius: "20px",
+              padding: "16px 18px",
+            }}
+          >
+            <p style={{ color: "rgba(221,214,254,0.8)", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "8px" }}>
+              Próxima Aula
+            </p>
+            <p style={{ color: "#ffffff", fontSize: "20px", fontWeight: 800, marginBottom: "2px" }}>
+              {nextClass.instructor?.name ?? "—"}
+            </p>
+            <p style={{ color: "rgba(221,214,254,0.7)", fontSize: "13px" }}>
+              {new Date(nextClass.date).toLocaleString("pt-BR", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+            </p>
+            <div className="flex items-center justify-between" style={{ marginTop: "14px" }}>
+              <div className="flex" style={{ gap: "6px" }}>
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} style={{ width: "6px", height: "6px", borderRadius: "50%", background: "rgba(255,255,255,0.35)" }} />
+                ))}
+              </div>
+              <div className="flex items-center justify-center" style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(255,255,255,0.15)" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
             </div>
-          ))}
-        </div>
+          </button>
+        ) : (
+          <div className="text-center" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "20px", padding: "20px" }}>
+            <p style={{ color: "#64748B", fontSize: "14px" }}>Nenhuma aula agendada</p>
+            <p style={{ color: "#475569", fontSize: "12px", marginTop: "4px" }}>Seu instrutor ainda não marcou novas aulas</p>
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", marginTop: "24px", gap: "24px" }}>
+      {/* Stats + atividade recente */}
+      <div className="flex flex-col" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "16px", gap: "16px" }}>
 
-        {/* Próximas aulas */}
-        <section>
-          <p className="text-xs font-semibold text-text-secondary uppercase tracking-widest mb-3">Próximas Aulas</p>
-          {loadingClasses ? (
-            <div className="flex items-center justify-center py-8 text-text-secondary">
-              <span className="text-3xl animate-spin">⏳</span>
+        {/* Stats */}
+        <div>
+          <p style={{ color: "#475569", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px" }}>
+            Resumo
+          </p>
+          <div className="grid grid-cols-3" style={{ gap: "10px" }}>
+            {[
+              { value: classes?.length ?? 0, label: "Total", color: "#A78BFA", accent: "rgba(124,58,237,0.15)", icon: "📚" },
+              { value: upcoming.length, label: "Próximas", color: "#34D399", accent: "rgba(52,211,153,0.12)", icon: "📅" },
+              { value: passedCount, label: "Aprovadas", color: "#FBBF24", accent: "rgba(251,191,36,0.12)", icon: "🏆" },
+            ].map(({ value, label, color, accent, icon }) => (
+              <div key={label} className="flex flex-col" style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "12px", gap: "6px" }}>
+                <div className="flex items-center justify-center" style={{ width: "30px", height: "30px", borderRadius: "9px", background: accent, fontSize: "14px" }}>{icon}</div>
+                <p style={{ fontSize: "22px", fontWeight: 800, color }}>{value}</p>
+                <p style={{ color: "#64748B", fontSize: "11px", fontWeight: 500 }}>{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Atividade recente */}
+        {past.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between" style={{ marginBottom: "8px" }}>
+              <p style={{ color: "#475569", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                Últimas Aulas
+              </p>
+              <button onClick={() => router.push("/student/classes")} style={{ color: "#A78BFA", fontSize: "12px", fontWeight: 700 }}>
+                Ver todas
+              </button>
             </div>
-          ) : upcoming.length === 0 ? (
-            <div
-              className="rounded-2xl p-5 text-center"
-              style={{ background: "#141728", border: "1px solid rgba(255,255,255,0.07)" }}
-            >
-              <p className="text-text-secondary text-sm">Nenhuma aula agendada</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {upcoming.map((c) => (
+            <div className="flex flex-col" style={{ gap: "10px" }}>
+              {past.slice(0, 2).map((c) => (
                 <ClassCard key={c.id} c={c} onClick={() => router.push(`/student/classes/${c.id}`)} />
               ))}
             </div>
-          )}
-        </section>
-
-        {/* Histórico */}
-        {past.length > 0 && (
-          <section>
-            <p className="text-xs font-semibold text-text-secondary uppercase tracking-widest mb-3">Histórico</p>
-            <div className="flex flex-col gap-3">
-              {past.map((c) => (
-                <div key={c.id} className="opacity-75">
-                  <ClassCard c={c} onClick={() => router.push(`/student/classes/${c.id}`)} />
-                </div>
-              ))}
-            </div>
-          </section>
+          </div>
         )}
       </div>
     </div>
