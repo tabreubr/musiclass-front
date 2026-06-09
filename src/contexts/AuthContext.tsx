@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { authService, LoginRequest, LoginResponse } from "@/services/authService";
+import { authService, LoginRequest, LoginResponse, RegisterRequest } from "@/services/authService";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +20,7 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
   studentLogin: (data: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
 }
 
@@ -85,6 +86,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     saveSession(response, "/student");
   }, [saveSession]);
 
+  // Registro de novo instrutor — auto-login após cadastro
+  const register = useCallback(async (data: RegisterRequest) => {
+    const response: LoginResponse = await authService.register(data);
+    saveSession(response, "/dashboard");
+  }, [saveSession]);
+
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -100,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     login,
     studentLogin,
+    register,
     logout,
   };
 

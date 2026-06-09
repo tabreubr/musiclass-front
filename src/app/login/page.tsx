@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
 type LoginMode = "instructor" | "student";
@@ -19,6 +20,7 @@ const fieldStyle: React.CSSProperties = {
 
 export default function LoginPage() {
   const { login, studentLogin } = useAuth();
+  const router = useRouter();
   const [mode, setMode] = useState<LoginMode>("instructor");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -274,9 +276,15 @@ export default function LoginPage() {
       </div>
 
       {/* Footer */}
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-6">
         <button style={{ color: "#A78BFA", fontSize: "13px", fontWeight: 500 }}>
           Esqueceu a senha?
+        </button>
+        <button
+          onClick={() => router.push("/register")}
+          style={{ color: "#A78BFA", fontSize: "13px", fontWeight: 500 }}
+        >
+          Criar conta
         </button>
       </div>
 
