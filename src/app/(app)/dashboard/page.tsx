@@ -18,7 +18,8 @@ function timeAgoLabel(dateStr: string): string {
   return `${Math.round(diff / (60 * 24))}d atrás`;
 }
 
-function dayLabel(dateStr: string, t: (k: string) => string): string {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function dayLabel(dateStr: string, t: (k: any) => string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diff = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
