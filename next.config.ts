@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
       static: 0,
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: "/backend/:path*",
+        destination: `${process.env.BACKEND_URL || "http://localhost:8080"}/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
