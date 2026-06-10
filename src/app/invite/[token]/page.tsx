@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { inviteService } from "@/services/inviteService";
 
 const fieldStyle: React.CSSProperties = {
@@ -33,6 +32,22 @@ export default function InvitePage() {
   const [error, setError] = useState<string | null>(null);
   const [hoveredBtn, setHoveredBtn] = useState(false);
 
+  const txt = {
+    title: "Você foi convidado!",
+    subtitle: "Crie sua conta para acessar a Musiclass",
+    emailPlaceholder: "Digite seu email...",
+    passwordPlaceholder: "Crie uma senha...",
+    submit: "Criar Conta",
+    submitting: "Criando conta...",
+    successTitle: "Conta criada!",
+    successSubtitle: "Agora você pode entrar com suas credenciais.",
+    successBtn: "Ir para o Login",
+    errFields: "Preencha todos os campos",
+    errExpired: "Este link de convite expirou ou já foi usado.",
+    errInvalid: "Este link de convite é inválido.",
+    errGeneric: "Algo deu errado. Tente novamente.",
+  };
+
   const goldenStyle = {
     background: "linear-gradient(135deg, #5C3F0E 0%, #9A7228 30%, #C49A32 55%, #9A7228 75%, #5C3F0E 100%)",
     boxShadow: "0 4px 16px rgba(154,114,40,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
@@ -44,7 +59,7 @@ export default function InvitePage() {
     setError(null);
 
     if (!email.trim() || !password.trim()) {
-      setError(t("invite_err_fields"));
+      setError(txt.errFields);
       return;
     }
 
@@ -55,11 +70,11 @@ export default function InvitePage() {
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 410) {
-        setError(t("invite_err_expired"));
+        setError(txt.errExpired);
       } else if (status === 404) {
-        setError(t("invite_err_invalid"));
+        setError(txt.errInvalid);
       } else {
-        setError(t("invite_err_generic"));
+        setError(txt.errGeneric);
       }
     } finally {
       setLoading(false);
@@ -145,8 +160,8 @@ export default function InvitePage() {
             <div className="flex flex-col items-center" style={{ gap: "20px", paddingTop: "16px", paddingBottom: "16px" }}>
               <span style={{ fontSize: "56px" }}>🎉</span>
               <div className="text-center" style={{ gap: "8px" }}>
-                <h2 style={{ color: "#F1F5F9", fontSize: "22px", fontWeight: 700 }}>{t("invite_success_title")}</h2>
-                <p style={{ color: "#A78BFA", fontSize: "14px", marginTop: "8px" }}>{t("invite_success_subtitle")}</p>
+                <h2 style={{ color: "#F1F5F9", fontSize: "22px", fontWeight: 700 }}>{txt.successTitle}</h2>
+                <p style={{ color: "#A78BFA", fontSize: "14px", marginTop: "8px" }}>{txt.successSubtitle}</p>
               </div>
               <button
                 onClick={() => router.push("/login")}
@@ -162,14 +177,14 @@ export default function InvitePage() {
                   letterSpacing: "0.04em",
                 }}
               >
-                {t("invite_success_btn")}
+                {txt.successBtn}
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col" style={{ gap: "12px" }}>
               <div className="text-center" style={{ marginBottom: "4px" }}>
-                <h2 style={{ color: "#F1F5F9", fontSize: "18px", fontWeight: 700 }}>{t("invite_title")}</h2>
-                <p style={{ color: "#A78BFA", fontSize: "13px", marginTop: "6px" }}>{t("invite_subtitle")}</p>
+                <h2 style={{ color: "#F1F5F9", fontSize: "18px", fontWeight: 700 }}>{txt.title}</h2>
+                <p style={{ color: "#A78BFA", fontSize: "13px", marginTop: "6px" }}>{txt.subtitle}</p>
               </div>
 
               {/* Email */}
@@ -179,7 +194,7 @@ export default function InvitePage() {
                 </label>
                 <input
                   type="email"
-                  placeholder={t("invite_email_placeholder")}
+                  placeholder={txt.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -196,7 +211,7 @@ export default function InvitePage() {
                 <div style={{ position: "relative" }}>
                   <input
                     type={showPassword ? "text" : "password"}
-                    placeholder={t("invite_password_placeholder")}
+                    placeholder={txt.passwordPlaceholder}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -270,7 +285,7 @@ export default function InvitePage() {
                   letterSpacing: "0.04em",
                 }}
               >
-                {loading ? t("invite_submitting") : t("invite_submit")}
+                {loading ? txt.submitting : txt.submit}
               </button>
             </form>
           )}
