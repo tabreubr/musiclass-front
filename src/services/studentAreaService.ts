@@ -15,7 +15,7 @@ export const studentAreaService = {
 
   // Retorna o detalhe de uma aula específica (endpoint compartilhado com instrutor)
   getClassById: async (id: number): Promise<ClassItem> => {
-    const response = await api.get<ClassItem>(`/classes/${id}`);
+    const response = await api.get<ClassItem>(`/student/classes/${id}`);
     return response.data;
   },
 
