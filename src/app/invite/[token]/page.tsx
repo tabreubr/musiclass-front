@@ -163,7 +163,7 @@ export default function InvitePage() {
                 <p style={{ color: "#A78BFA", fontSize: "14px", marginTop: "8px" }}>{txt.successSubtitle}</p>
               </div>
               <button
-                onClick={() => router.push("/login")}
+                onClick={() => router.push("/login?mode=student")}
                 className="w-full font-bold active:scale-[0.98] transition-all"
                 style={{
                   background: "linear-gradient(135deg, #7C3AED, #A855F7)",

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
 type LoginMode = "instructor" | "student";
@@ -21,7 +21,14 @@ const fieldStyle: React.CSSProperties = {
 export default function LoginPage() {
   const { login, studentLogin } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<LoginMode>("instructor");
+
+  useEffect(() => {
+    if (searchParams.get("mode") === "student") {
+      setMode("student");
+    }
+  }, [searchParams]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
