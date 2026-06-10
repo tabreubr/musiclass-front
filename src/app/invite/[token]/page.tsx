@@ -21,7 +21,6 @@ type PageState = "form" | "success";
 export default function InvitePage() {
   const router = useRouter();
   const params = useParams();
-  const { t } = useLanguage();
   const token = params.token as string;
 
   const [pageState, setPageState] = useState<PageState>("form");
