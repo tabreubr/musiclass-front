@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -18,7 +18,7 @@ const fieldStyle: React.CSSProperties = {
   colorScheme: "dark",
 };
 
-export default function LoginPage() {
+function LoginPageInner() {
   const { login, studentLogin } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -297,5 +297,13 @@ export default function LoginPage() {
 
       </div>{/* fim do conteúdo z-index */}
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
   );
 }
